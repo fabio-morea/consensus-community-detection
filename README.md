@@ -1,4 +1,4 @@
-# LMN
+# LMN Labour Market Network analysis and community detection
 
 
 
