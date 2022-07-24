@@ -142,7 +142,7 @@ make.transitions.table <- function(contracts, echo= FALSE){
         }
     }
     transitions <- transitions %>% 
-        arrange(empl,d_trans)%>%
+        arrange(d_trans,empl)%>%
         mutate(loop = if_else(cf1==cf2, "o", "-"))
 
 
