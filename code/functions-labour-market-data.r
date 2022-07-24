@@ -172,3 +172,24 @@ make.transitions.table <- function(contracts, echo= FALSE){
     if (echo == TRUE) {print("Done.Check output in tmp folder.") }          #only for debug puropses
     return(clean_transitions)
 }
+
+
+make.organisations.table <- function(data, selected.organisations){
+    
+    org_locations = data %>% 
+    select(CF, az_ragione_soc, 
+        sede_op_comune,sede_op_indirizzo,sede_op_provincia,
+        SLL_codice, SLL_nome,comune_istat,sede_op_ateco,)%>%
+        unique()%>%
+    filter(CF %in%  selected.organisations)
+
+    #add a unique id for each local unit 
+    org_locations<- org_locations%>%
+        group_by(CF, comune_istat, sede_op_indirizzo)%>%
+        mutate(local_unit_id = cur_group_id())%>%
+        relocate(local_unit_id)%>%
+        ungroup()%>%
+        unique()
+    return(org_locations)
+ 
+}

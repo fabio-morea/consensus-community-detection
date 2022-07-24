@@ -115,6 +115,12 @@ links <- transitions.table %>%
     select(d_trans, empl, cf1,cf2,ww)%>% 
     group_by(d_trans, empl, cf1,cf2,ww)%>%
     tally()
-
 links %>%
     write_csv("./tmp/links.csv")
+
+selected.organisations <- tolower(unique( c(links$cf1,links$cf2) )))
+orgs <- make.organisations.table(data,selected.organisations )
+orgs %>% write_csv("./tmp/organisations.csv")
+
+
+
