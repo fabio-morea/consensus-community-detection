@@ -35,8 +35,8 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
 make.ids.conversion.table <- function(data, echo= FALSE){
     if (echo == TRUE) {print("Start ids conversion table ") }          #only for debug puropses
     sorted.employees <- data %>%
-        #mutate(data_inizio = min(data_inizio))%>%
-        #mutate(data_fine = max(data_fine))%>%
+        mutate(data_inizio = min(data_inizio))%>%
+        mutate(data_fine = max(data_fine))%>%
         arrange(data_nascita, iso3, genere, data_inizio, id_cittadino)%>%
         group_by(data_nascita,  iso3, genere)%>%
         unique()
@@ -102,15 +102,16 @@ make.transitions.table <- function(contracts, echo= FALSE){
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
 
     experience <- contracts %>%
-    select(idempl,qualifica_codice,CF,data_inizio,data_fine)%>%
-    mutate(dd= replace_na(data_fine, ymd(today())))%>%
-    mutate(durat = time_length(dd - data_inizio, 'years'))%>%
-    arrange(idempl,data_inizio)%>%
-    filter(durat>0)%>%
-    unique()
+        select(idempl,qualifica_codice,CF,data_inizio,data_fine)%>%
+        mutate(dd= replace_na(data_fine, ymd(today())))%>%
+        mutate(durat = time_length(dd - data_inizio, 'years'))%>%
+        filter(durat>0)%>%
+        arrange(idempl,data_inizio)%>%
+        unique()
     
     transitions = tibble(
-    d_trans=ymd("1900-01-01"),
+    date_end1   <- ymd("1900-01-01"),
+    date_start2 <- ymd("1900-01-01"),
     empl=0, 
     qualif=".",
     cf1=".", 
@@ -121,20 +122,37 @@ make.transitions.table <- function(contracts, echo= FALSE){
     for(iii in idcs){
         tmp = experience%>% filter(idempl==iii)
         ncontracts = nrow(tmp)
+        nn=ncontracts-1
         if (ncontracts>1){
-            for (i in 1:ncontracts-1){
-                cf1 = tmp$CF[i]
-                cf2 = tmp$CF[i+1]
+            for (i in 1:nn){
+                empl <- tmp$idempl[1]
+                cf1  <- tmp$CF[i]
+                cf2  <- tmp$CF[i+1]
                 qualif = tmp$qualifica_codice[i+1]
-                empl =tmp$idempl[i]
-                d_trans = ymd(tmp$data_inizio[i+1])
+                date_start2 <- ymd(tmp$data_inizio[i+1])
+                
+                print(date_end1)
+                if (tmp$data_inizio[i+1] == NA ) {
+                    date_end1 <- date_start2}
+                else {
+                    date_end1   <- ymd(tmp$data_fine[i])}
+                    
+                gap = time_length(   date_start2 - date_end1, 'years')
                 ww = as.numeric(tmp$durat[i+1])#weight is the duration in the second company
-                transitions <- transitions%>% add_row(d_trans=d_trans,
-                                                    empl=empl,
-                                                    qualif=qualif,
-                                                    cf1=cf1, 
-                                                    cf2=cf2,
-                                                    ww=ww)
+                print(paste(iii, ncontracts,i,"Data fine e inizio successivo: df",tmp$data_fine[i] ," di ",tmp$data_inizio[i+1], gap))
+                if (gap < 0 ){
+                    date_end1<-date_start2
+                    gap<-0
+                    print("Reset gap = 0")
+                }
+                transitions <- transitions%>% 
+                    add_row(empl=empl,
+                            date_end1=date_end1,
+                            date_start2=date_start2,
+                            qualif=qualif,
+                            cf1=cf1, 
+                            cf2=cf2,
+                            ww=ww)
             } 
         }
     }
@@ -156,6 +174,7 @@ make.transitions.table <- function(contracts, echo= FALSE){
             cumulate_weight=tmp$ww
             clean_transitions <- clean_transitions%>% 
             add_row(d_trans=tmp$d_trans,
+                    d_trans2=tmp$d_trans2,
                     empl=tmp$empl,
                     cf1=tmp$cf1, 
                     cf2=tmp$cf2,

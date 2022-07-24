@@ -1,7 +1,7 @@
 # main
 
 ## debug mode
-debug <- FALSE
+debug <- TRUE
 echo <- TRUE
 
 ## load libraries
@@ -64,7 +64,6 @@ to_remove5<-c("2.1.1.1.2","2.1.1.6.2", "2.1.1.6.4" )
 
 data <- data %>%  
         mutate(across(where(is.character), toupper))%>%
-        #filter(qualifica_2_digit %in% to_keep)%>%
         mutate(q2=substring(qualifica_codice,1,3))%>%filter( q2 %in% to_keep)%>%
         mutate(q3=substring(qualifica_codice,1,5))%>%filter(!q3 %in% to_remove3)%>%
         mutate(q4=substring(qualifica_codice,1,7))%>%filter(!q4 %in% to_remove4)%>%
@@ -72,8 +71,9 @@ data <- data %>%
         
 
 print(data%>%group_by(q2)%>%tally())
-idct <-  make.ids.conversion.table(data, debug )
-idct %>%  write_csv("./tmp/ids_conversion_table.csv") # only for debug
+idct <-  make.ids.conversion.table(data, echo )
+idct %>%  
+    write_csv("./tmp/ids_conversion_table.csv") # only for debug
 
 employees<-data%>%
     left_join(idct, by="id_cittadino")%>%
@@ -90,33 +90,33 @@ employees <- employees %>%
     unique()
 
 # TODO: fuzzify dat eof birth and transform into age
-employees %>% write_csv("./tmp/employees.csv")
+employees %>% 
+    write_csv("./tmp/employees.csv")
 
 
 ## identify contracts
-contracts <- data  %>%  
+contracts <- data  %>%
     mutate(across(where(is.character), toupper)) %>%
-    filter(id_cittadino %in% idct$id_cittadino)
+    filter(id_cittadino %in% idct$id_cittadino) %>%
+    mutate(dd= replace_na(data_fine, ymd(today())))%>%
+    mutate(durat = time_length(dd - data_inizio, 'years'))
 
 contracts <- contracts %>%
     left_join(idct, by="id_cittadino") %>%
     relocate(idempl, CF) %>%
-    select(idempl, CF, az_ragione_soc, data_inizio, data_fine,professione, qualifica, qualifica_codice, rl_ateco, rl_ateco_macro, rl_ateco_settore, saldo, sede_op_ateco, sede_op_comune, sede_op_indirizzo, sede_op_provincia, SLL_nome, tipo_contratto )
+    select(idempl, CF, az_ragione_soc, data_inizio, data_fine, durat, professione, qualifica, qualifica_codice, rl_ateco, rl_ateco_macro, rl_ateco_settore, saldo, sede_op_ateco, sede_op_comune, sede_op_indirizzo, sede_op_provincia, SLL_nome, tipo_contratto )
 
-contracts %>%
-    write_csv("./tmp/contracts.csv")
+contracts %>% write_csv("./tmp/contracts.csv")
 
 transitions.table <- make.transitions.table(contracts, echo)
-transitions.table %>% 
-    write_csv("./tmp/transitions.csv")
+transitions.table %>% write_csv("./tmp/transitions.csv")
 
 links <- transitions.table %>%
-    select(d_trans, empl, cf1,cf2,ww)%>% 
-    group_by(d_trans, empl, cf1,cf2,ww)%>%
-    arrange(d_trans) 
+    select(empl, cf1, d_trans, cf2, d_trans2, ww)%>% 
+    group_by(d_trans2, empl, cf1,cf2,ww)%>%
+    arrange(d_trans2) 
 
-links %>%
-    write_csv("./tmp/links.csv")
+links %>% write_csv("./tmp/links.csv")
 
 selected.organisations <- tolower(unique( c(links$cf1,links$cf2) ))
 orgs <- make.organisations.table(data,selected.organisations )
@@ -127,5 +127,9 @@ orgs %>% write_csv("./tmp/organisations.csv")
 ## we expect that all transitions are within the range of selected years 2014-2015 but there are more
 ## eg employee 437 - links:
 ## 1983-07-04,437,CF_00164830309,CF_04030970968,31.822039698836413,1
+
+## CONTROLLARE LINKS CON LE DOPPIE DATE: C'è QUALCOSA CHE NON QUADRA
+## LA DATA 1 E DATA 2 NON SONO NEL RANGE PREVISTO
+## E IN ALCUNI CASI SONO INVERTITE
 
 print("Script completed.")
