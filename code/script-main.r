@@ -108,4 +108,13 @@ contracts %>%
     write_csv("./tmp/contracts.csv")
 
 transitions.table <- make.transitions.table(contracts, echo)
-transitions.table %>% write_csv("./tmp/transitions.csv")
+transitions.table %>% 
+    write_csv("./tmp/transitions.csv")
+
+links <- transitions.table %>%
+    select(d_trans, empl, cf1,cf2,ww)%>% 
+    group_by(d_trans, empl, cf1,cf2,ww)%>%
+    tally()
+
+links %>%
+    write_csv("./tmp/links.csv")
