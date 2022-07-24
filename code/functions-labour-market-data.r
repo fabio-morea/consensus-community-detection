@@ -1,7 +1,12 @@
 # functions
 
 # Load data 
-load_data <- function(path, columns, debug = FALSE){
+load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
+
+    if (debug == TRUE) {print("Debug mode: only 2 files will be loaded")} #only for debug puropses
+    if (echo == TRUE) {print(paste("Start loading data from ", path) ) }  #only for debug puropses
+
+    
     files = list.files(path=path, pattern="dati*", all.files=TRUE, full.names=TRUE)
     nfiles = length(files)
 
@@ -15,20 +20,22 @@ load_data <- function(path, columns, debug = FALSE){
         print(paste("Loading file ", files[i]))
         new <- files[i] %>% 
             read_delim(  delim = "|", show_col_types = FALSE) %>%
-            select(columns) 
+            select(columns) %>%
+            unique()
 
         data <- rbind(data,new) 
         
          
     }
-    print(paste(nfiles, "files loaded."))
+    if (echo == TRUE) {print(paste(nfiles, "files loaded."))}    #only for debug puropses
     return(data)
 }
 
 # make a conversion table to re-identify emplo
 
   
-make.ids.conversion.table <- function(employees){
+make.ids.conversion.table <- function(employees, echo= FALSE){
+    if (echo == TRUE) {print("Start ids conversion table ") }          #only for debug puropses
         
     sorted.employees <- employees %>%
         mutate(data_inizio = min(data_inizio))%>%
@@ -88,7 +95,80 @@ make.ids.conversion.table <- function(employees){
 
     }
 
+    if (echo == TRUE) {print("Done.Check output in tmp folder.") }          #only for debug puropses
+
     return(ids_conversion_table)
+}
+
+# mate a table of transitions
+make.transitions.table <- function(contracts, echo= FALSE){
+    if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
+
+    experience <- contracts %>%
+    select(idempl,qualifica_codice,CF,data_inizio,data_fine)%>%
+    mutate(dd= replace_na(data_fine, ymd(today())))%>%
+    mutate(durat = time_length(dd - data_inizio, 'years'))%>%
+    arrange(idempl,data_inizio)%>%
+    filter(durat>0)%>%
+    unique()
+    
+    transitions = tibble(
+    d_trans=ymd("1900-01-01"),
+    empl=0, 
+    qualif=".",
+    cf1=".", 
+    cf2=".", 
+    ww=0)
+
+    idcs <- unique(contracts$idempl)  
+    for(iii in idcs){
+        tmp = experience%>% filter(idempl==iii)
+        ncontracts = nrow(tmp)
+        if (ncontracts>1){
+            for (i in 1:ncontracts-1){
+                cf1 = tmp$CF[i]
+                cf2 = tmp$CF[i+1]
+                qualif = tmp$qualifica_codice[i+1]
+                empl =tmp$idempl[i]
+                d_trans = ymd(tmp$data_inizio[i+1])
+                ww = as.numeric(tmp$durat[i+1])#weight is the duration in the second company
+                transitions <- transitions%>% add_row(d_trans=d_trans,
+                                                    empl=empl,
+                                                    qualif=qualif,
+                                                    cf1=cf1, 
+                                                    cf2=cf2,
+                                                    ww=ww)
+            } 
+        }
+    }
+    transitions <- transitions %>% 
+        arrange(empl,d_trans)%>%
+        mutate(loop = if_else(cf1==cf2, "o", "-"))
 
 
+    #aggregate transition of same employee with same company
+    clean_transitions = transitions%>%head(0)
+    cumulate_weight=0
+    empl_prec=0
+    for(iii in 1:nrow(transitions)){
+        tmp = transitions[iii,] #extract one row
+        if (tmp$empl != empl_prec){cumulate_weight=0}
+        if (tmp$loop == "o") {
+            cumulate_weight=cumulate_weight+tmp$ww}
+        else{
+            cumulate_weight=tmp$ww
+            clean_transitions <- clean_transitions%>% 
+            add_row(d_trans=tmp$d_trans,
+                    empl=tmp$empl,
+                    cf1=tmp$cf1, 
+                    cf2=tmp$cf2,
+                    qualif=tmp$qualif,
+                    ww=cumulate_weight, 
+                    loop=tmp$loop)
+    }
+
+    empl_prec=tmp$empl
+    }
+    if (echo == TRUE) {print("Done.Check output in tmp folder.") }          #only for debug puropses
+    return(clean_transitions)
 }

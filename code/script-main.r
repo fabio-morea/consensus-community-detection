@@ -1,5 +1,9 @@
 # main
 
+## debug mode
+debug <- TRUE
+echo <- TRUE
+
 ## load libraries
 library(tidyverse)
 library(lubridate)  #dates
@@ -15,10 +19,15 @@ path <- get.data.folder.path()
 
 columns <- c(   "id_cittadino","data_nascita",  "iso3","genere",
                 "data_inizio","data_fine","tipo_contratto","qualifica_2_digit",
-                "qualifica","qualifica_codice","SLL_codice", "comune_istat", 
-                "professione", "saldo")
+                "qualifica","qualifica_codice", "comune_istat", 
+                "professione", "saldo",
+                "CF", "az_ragione_soc",  
+                "rl_ateco", "rl_ateco_macro", "rl_ateco_settore", 
+                "sede_op_ateco", "sede_op_comune", "sede_op_indirizzo", "sede_op_provincia", 
+                "SLL_codice", "SLL_nome", "tipo_contratto" )
 
-data <- load_data(path, columns, debug=TRUE)  
+
+data <- load_data(path, columns, echo, debug)  
  
 ## filter by profession
 # 2.1 - Specialisti in scienze matematiche, informatiche, chimiche, fisiche e naturali
@@ -63,7 +72,40 @@ employees <- data %>%
 
 print(employees%>%group_by(qualifica)%>%tally())
 
-tmp <-  make.ids.conversion.table(employees)
+idct <-  make.ids.conversion.table(employees, debug )
 
-tmp %>%  write_csv("./tmp/ids_conversion_table.csv")
+idct %>%  write_csv("./tmp/ids_conversion_table.csv") # only for debug
 
+ employees<-employees%>%
+  left_join(idct, by="id_cittadino")%>%
+  select(-id_cittadino)
+
+
+employees <- employees %>% 
+  group_by(idempl)%>%
+  mutate(date_in = min(data_inizio))%>%
+  mutate(date_out =max(data_fine))%>%
+  select(idempl,data_nascita, genere, iso3, date_in, date_out)%>%
+  rename(dob=data_nascita, sex=genere, country=iso3)%>%
+  drop_na(idempl)%>%
+  unique()
+
+# TODO: fuzzify dat eof birth and transform into age
+employees %>% write_csv("./tmp/employees.csv")
+
+
+## identify contracts
+contracts <- data  %>%  
+    mutate(across(where(is.character), toupper)) %>%
+    filter(id_cittadino %in% idct$id_cittadino)
+
+contracts <- contracts %>%
+    left_join(idct, by="id_cittadino") %>%
+    relocate(idempl, CF) %>%
+    select(idempl, CF, az_ragione_soc, data_inizio, data_fine,professione, qualifica, qualifica_codice, rl_ateco, rl_ateco_macro, rl_ateco_settore, saldo, sede_op_ateco, sede_op_comune, sede_op_indirizzo, sede_op_provincia, SLL_nome, tipo_contratto )
+
+contracts %>%
+    write_csv("./tmp/contracts.csv")
+
+transitions.table <- make.transitions.table(contracts, echo)
+transitions.table %>% write_csv("./tmp/transitions.csv")
