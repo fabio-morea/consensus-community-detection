@@ -130,16 +130,16 @@ make.transitions.table <- function(contracts, echo= FALSE){
                 cf2  <- tmp$CF[i+1]
                 qualif = tmp$qualifica_codice[i+1]
                 date_start2 <- ymd(tmp$data_inizio[i+1])
-                
-                print(date_end1)
-                if (tmp$data_inizio[i+1] == NA ) {
-                    date_end1 <- date_start2}
-                else {
-                    date_end1   <- ymd(tmp$data_fine[i])}
+                tempdate <- tmp$data_fine[i]
+                print(tempdate)
+                if (tempdate == "2019-05-31" ) 
+                    {date_end1 <- date_start2}
+                else 
+                    {date_end1   <- ymd(tempdate)}
                     
                 gap = time_length(   date_start2 - date_end1, 'years')
                 ww = as.numeric(tmp$durat[i+1])#weight is the duration in the second company
-                print(paste(iii, ncontracts,i,"Data fine e inizio successivo: df",tmp$data_fine[i] ," di ",tmp$data_inizio[i+1], gap))
+                print(paste(iii, ncontracts,i,"Data fine e inizio successivo  de1:",date_end1 ," ds2:",date_start2, "gap:",gap))
                 if (gap < 0 ){
                     date_end1<-date_start2
                     gap<-0
