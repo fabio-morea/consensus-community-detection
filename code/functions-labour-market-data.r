@@ -110,13 +110,14 @@ make.transitions.table <- function(contracts, echo= FALSE){
         unique()
     
     transitions = tibble(
-    date_end1   <- ymd("1900-01-01"),
-    date_start2 <- ymd("1900-01-01"),
-    empl=0, 
-    qualif=".",
-    cf1=".", 
-    cf2=".", 
-    ww=0)
+        empl=0, 
+        cf1=".", 
+        cf2=".", 
+        qualif=".",
+        date_end1   = ymd("1900-01-01"),
+        date_start2 = ymd("1900-01-01"),
+        gap=0.0,
+        ww=0)
 
     idcs <- unique(contracts$idempl)  
     for(iii in idcs){
@@ -129,35 +130,35 @@ make.transitions.table <- function(contracts, echo= FALSE){
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
                 qualif = tmp$qualifica_codice[i+1]
-                date_start2 <- ymd(tmp$data_inizio[i+1])
-                tempdate <- tmp$data_fine[i]
-                print(tempdate)
-                if (tempdate == "2019-05-31" ) 
-                    {date_end1 <- date_start2}
+                d_start2 <- ymd(tmp$data_inizio[i+1])
+                tempdate <- ymd(tmp$data_fine[i])
+                if (is.na(tempdate))  
+                    {d_end1 <- d_start2}
                 else 
-                    {date_end1   <- ymd(tempdate)}
-                    
-                gap = time_length(   date_start2 - date_end1, 'years')
+                    {d_end1   <- tempdate}
+                gap = time_length(d_start2 - d_end1, 'years')
                 ww = as.numeric(tmp$durat[i+1])#weight is the duration in the second company
-                print(paste(iii, ncontracts,i,"Data fine e inizio successivo  de1:",date_end1 ," ds2:",date_start2, "gap:",gap))
+                print(paste(iii, ncontracts,i,"Data fine e inizio successivo  de1:",d_end1 ," ds2:",d_start2, "gap:",gap))
+                if (is.na(gap)){gap = -1}
                 if (gap < 0 ){
-                    date_end1<-date_start2
+                    d_end1<-d_start2
                     gap<-0
                     print("Reset gap = 0")
                 }
-                transitions <- transitions%>% 
-                    add_row(empl=empl,
-                            date_end1=date_end1,
-                            date_start2=date_start2,
-                            qualif=qualif,
-                            cf1=cf1, 
-                            cf2=cf2,
-                            ww=ww)
+                transitions <- transitions %>% add_row(
+                    empl=empl,
+                    cf1=cf1, 
+                    cf2=cf2,
+                    qualif=qualif,
+                    date_end1   = d_end1,
+                    date_start2 = d_start2,
+                    gap=gap,
+                    ww=ww)
             } 
         }
     }
     transitions <- transitions %>% 
-        arrange(d_trans,empl)%>%
+        arrange(d_start2,empl)%>%
         mutate(loop = if_else(cf1==cf2, "o", "-"))
 
 
@@ -173,13 +174,14 @@ make.transitions.table <- function(contracts, echo= FALSE){
         else{
             cumulate_weight=tmp$ww
             clean_transitions <- clean_transitions%>% 
-            add_row(d_trans=tmp$d_trans,
-                    d_trans2=tmp$d_trans2,
+            add_row(date_start2=tmp$date_start2,
+                    date_end1=tmp$date_end1,
                     empl=tmp$empl,
                     cf1=tmp$cf1, 
                     cf2=tmp$cf2,
                     qualif=tmp$qualif,
                     ww=cumulate_weight, 
+                    gap=tmp$gap,
                     loop=tmp$loop)
     }
 

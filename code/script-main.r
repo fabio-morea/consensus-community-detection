@@ -1,7 +1,7 @@
 # main
 
 ## debug mode
-debug <- TRUE
+debug <- FALSE
 echo <- TRUE
 
 ## load libraries
@@ -112,9 +112,9 @@ transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")
 
 links <- transitions.table %>%
-    select(empl, cf1, d_trans, cf2, d_trans2, ww)%>% 
-    group_by(d_trans2, empl, cf1,cf2,ww)%>%
-    arrange(d_trans2) 
+    select(empl, cf1, date_end1, cf2, date_start2, ww)%>% 
+    group_by(date_start2, empl, cf1,cf2,ww)%>%
+    arrange(date_start2) 
 
 links %>% write_csv("./tmp/links.csv")
 
