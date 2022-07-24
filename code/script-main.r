@@ -62,34 +62,32 @@ to_remove4<-c("2.3.1.3","2.3.1.4","2.3.1.5","2.6.1.4","2.6.1.5","2.6.1.6","2.6.2
 # 2.1.1.6.4 - Meteorologi
 to_remove5<-c("2.1.1.1.2","2.1.1.6.2", "2.1.1.6.4" )
 
-employees <- data %>%  
+data <- data %>%  
         mutate(across(where(is.character), toupper))%>%
         #filter(qualifica_2_digit %in% to_keep)%>%
         mutate(q2=substring(qualifica_codice,1,3))%>%filter( q2 %in% to_keep)%>%
         mutate(q3=substring(qualifica_codice,1,5))%>%filter(!q3 %in% to_remove3)%>%
         mutate(q4=substring(qualifica_codice,1,7))%>%filter(!q4 %in% to_remove4)%>%
-        mutate(q5=substring(qualifica_codice,1,9))%>%filter(!q5 %in% to_remove5)%>%
-        arrange(data_nascita) 
+        mutate(q5=substring(qualifica_codice,1,9))%>%filter(!q5 %in% to_remove5)
+        
 
-print(employees%>%group_by(q2)%>%tally())
-
-idct <-  make.ids.conversion.table(employees, debug )
-
+print(data%>%group_by(q2)%>%tally())
+idct <-  make.ids.conversion.table(data, debug )
 idct %>%  write_csv("./tmp/ids_conversion_table.csv") # only for debug
 
- employees<-employees%>%
-  left_join(idct, by="id_cittadino")%>%
-  select(-id_cittadino)
-
+employees<-data%>%
+    left_join(idct, by="id_cittadino")%>%
+    select(-id_cittadino)
 
 employees <- employees %>% 
-  group_by(idempl)%>%
-  mutate(date_in = min(data_inizio))%>%
-  mutate(date_out =max(data_fine))%>%
-  select(idempl,data_nascita, genere, iso3, date_in, date_out)%>%
-  rename(dob=data_nascita, sex=genere, country=iso3)%>%
-  drop_na(idempl)%>%
-  unique()
+    group_by(idempl)%>%
+    mutate(date_in = min(data_inizio))%>%
+    mutate(date_out =max(data_fine))%>%
+    select(idempl, data_nascita, genere, iso3, date_in, date_out) %>%
+    rename(dob=data_nascita, sex=genere, country=iso3) %>%
+    drop_na(idempl) %>%
+    arrange(idempl) %>%
+    unique()
 
 # TODO: fuzzify dat eof birth and transform into age
 employees %>% write_csv("./tmp/employees.csv")
@@ -130,3 +128,4 @@ orgs %>% write_csv("./tmp/organisations.csv")
 ## eg employee 437 - links:
 ## 1983-07-04,437,CF_00164830309,CF_04030970968,31.822039698836413,1
 
+print("Script completed.")

@@ -32,9 +32,9 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
 }
 
 # make a conversion table to re-identify employees
-make.ids.conversion.table <- function(employees, echo= FALSE){
+make.ids.conversion.table <- function(data, echo= FALSE){
     if (echo == TRUE) {print("Start ids conversion table ") }          #only for debug puropses
-    sorted.employees <- employees %>%
+    sorted.employees <- data %>%
         #mutate(data_inizio = min(data_inizio))%>%
         #mutate(data_fine = max(data_fine))%>%
         arrange(data_nascita, iso3, genere, data_inizio, id_cittadino)%>%
