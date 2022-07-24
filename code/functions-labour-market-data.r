@@ -14,7 +14,7 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
 
     data <- files[1] %>% 
         read_delim( delim = "|", show_col_types = FALSE) %>%
-        select(columns)  
+        select(all_of(columns))  
 
     for (i in 2:nfiles){
         print(paste("Loading file ", files[i]))
@@ -31,15 +31,12 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
     return(data)
 }
 
-# make a conversion table to re-identify emplo
-
-  
+# make a conversion table to re-identify employees
 make.ids.conversion.table <- function(employees, echo= FALSE){
     if (echo == TRUE) {print("Start ids conversion table ") }          #only for debug puropses
-        
     sorted.employees <- employees %>%
-        mutate(data_inizio = min(data_inizio))%>%
-        mutate(data_fine = max(data_fine))%>%
+        #mutate(data_inizio = min(data_inizio))%>%
+        #mutate(data_fine = max(data_fine))%>%
         arrange(data_nascita, iso3, genere, data_inizio, id_cittadino)%>%
         group_by(data_nascita,  iso3, genere)%>%
         unique()

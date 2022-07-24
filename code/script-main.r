@@ -64,13 +64,14 @@ to_remove5<-c("2.1.1.1.2","2.1.1.6.2", "2.1.1.6.4" )
 
 employees <- data %>%  
         mutate(across(where(is.character), toupper))%>%
-        filter(qualifica_2_digit %in% to_keep)%>%
+        #filter(qualifica_2_digit %in% to_keep)%>%
+        mutate(q2=substring(qualifica_codice,1,3))%>%filter( q2 %in% to_keep)%>%
         mutate(q3=substring(qualifica_codice,1,5))%>%filter(!q3 %in% to_remove3)%>%
         mutate(q4=substring(qualifica_codice,1,7))%>%filter(!q4 %in% to_remove4)%>%
         mutate(q5=substring(qualifica_codice,1,9))%>%filter(!q5 %in% to_remove5)%>%
         arrange(data_nascita) 
 
-print(employees%>%group_by(qualifica)%>%tally())
+print(employees%>%group_by(q2)%>%tally())
 
 idct <-  make.ids.conversion.table(employees, debug )
 
@@ -115,7 +116,7 @@ links <- transitions.table %>%
     select(d_trans, empl, cf1,cf2,ww)%>% 
     group_by(d_trans, empl, cf1,cf2,ww)%>%
     arrange(d_trans) 
-    
+
 links %>%
     write_csv("./tmp/links.csv")
 
@@ -124,4 +125,8 @@ orgs <- make.organisations.table(data,selected.organisations )
 orgs %>% write_csv("./tmp/organisations.csv")
 
 
+## Debug: add a preliminary check that the dates are consistent
+## we expect that all transitions are within the range of selected years 2014-2015 but there are more
+## eg employee 437 - links:
+## 1983-07-04,437,CF_00164830309,CF_04030970968,31.822039698836413,1
 
