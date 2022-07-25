@@ -1,7 +1,19 @@
+# Author: Fabio Morea @ Area Science Park
+# Package: Labour Market Network - version 1.0
+# Description: R program to extract information from labour market data.
+#               Original data is not included in the package as it contains persnoal information
+#               Test data is random an contains no personal information
+
+# SPDX-License-Identifier: CC-BY-4.0
+
+# GitLab: https://gitlab.com/fabio-morea-areasciencepark/greencodes 
+
+
+
 # main
 
 ## debug mode
-debug <- FALSE
+debug <- TRUE
 echo <- TRUE
 
 ## load libraries
@@ -9,8 +21,7 @@ library(tidyverse)
 library(lubridate)  #dates
 library(kableExtra) #tables
 library(xtable)     #tables
-library(igraph)
-
+ 
 ## load functions
 source("./code/parameters.R")
 source("./code/functions-labour-market-data.R")

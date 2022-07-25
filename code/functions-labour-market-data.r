@@ -97,7 +97,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
     return(ids_conversion_table)
 }
 
-# mate a table of transitions
+# mate a table of transitions #################################################
 make.transitions.table <- function(contracts, echo= FALSE){
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
 
@@ -122,11 +122,15 @@ make.transitions.table <- function(contracts, echo= FALSE){
     idcs <- unique(contracts$idempl)  
     for(iii in idcs){
         tmp = experience%>% filter(idempl==iii)
+        print(paste("Procesing employee ", iii, ncontracts ))
+        print(paste("contract ", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
+        print(paste("contract ", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
+        
         ncontracts = nrow(tmp)
         nn=ncontracts-1
         if (ncontracts>1){
             for (i in 1:nn){
-                empl <- tmp$idempl[1]
+                empl <- tmp$idempl[i+1]
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
                 qualif = tmp$qualifica_codice[i+1]
@@ -138,7 +142,6 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     {d_end1   <- tempdate}
                 gap = round(time_length(d_start2 - d_end1, 'years'), 3)
                 ww = round(as.numeric(tmp$durat[i+1]),3) #weight is the duration in the second company
-                print(paste(iii, ncontracts,i,"Data fine e inizio successivo  de1:",d_end1 ," ds2:",d_start2, "gap:",gap))
                 if (is.na(gap)){gap = -1}
                 if (gap < 0 ){
                     d_end1<-d_start2
