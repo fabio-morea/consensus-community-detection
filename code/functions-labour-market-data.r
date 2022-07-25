@@ -136,8 +136,8 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     {d_end1 <- d_start2}
                 else 
                     {d_end1   <- tempdate}
-                gap = time_length(d_start2 - d_end1, 'years')
-                ww = as.numeric(tmp$durat[i+1])#weight is the duration in the second company
+                gap = round(time_length(d_start2 - d_end1, 'years'), 3)
+                ww = round(as.numeric(tmp$durat[i+1]),3) #weight is the duration in the second company
                 print(paste(iii, ncontracts,i,"Data fine e inizio successivo  de1:",d_end1 ," ds2:",d_start2, "gap:",gap))
                 if (is.na(gap)){gap = -1}
                 if (gap < 0 ){
