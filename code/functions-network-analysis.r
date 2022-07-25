@@ -1,2 +1,2 @@
-# functions for network generation and analysis
+# functions for network analysis
  
