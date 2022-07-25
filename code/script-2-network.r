@@ -11,7 +11,7 @@
 # script 2: generate adjacency matrix and network
 
 ## debug mode
-debug <- TRUE
+debug <- FALSE
 echo <- TRUE
 
 ## load libraries
@@ -46,9 +46,9 @@ igraph.options(vertex.size=5,
                cex.main=0.8)
 
 as_long_data_frame(g) %>%
-  write_csv("graph_as_df.csv")
+  write_csv("./results/graph_as_df.csv")
 
-g %>% write_graph("full_graph.csv", format="graphml")
+g %>% write_graph("./results/full_graph.csv", format="graphml")
 plot(g)
 
 print("Process completed")

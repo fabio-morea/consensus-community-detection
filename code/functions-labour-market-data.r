@@ -49,9 +49,9 @@ make.ids.conversion.table <- function(data, echo= FALSE){
                 
     d_fin_prec = ymd("1900-01-01")
     idprec="x"
-    dob_prev=ymd("1900-01-01")
-    nat_prev="x"
-    gen_prev="x"
+    dob_prev = ymd("1900-01-01")
+    nat_prev ="x"
+    gen_prev ="x"
     nnnn = nrow(sorted.employees)
  
     for(i in 1:nnnn) {

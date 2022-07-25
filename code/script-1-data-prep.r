@@ -13,7 +13,7 @@
 # main
 
 ## debug mode
-debug <- TRUE
+debug <- FALSE
 echo <- TRUE
 
 ## load libraries
