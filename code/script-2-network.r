@@ -35,20 +35,20 @@ adjm <- as_adjacency_matrix(gdf, attr = "ww",sparse = T)
 
 g <- graph_from_adjacency_matrix(adjm, weighted=TRUE,mode='directed') 
 
-hist(E(g)$weight, breaks=100)
+plot(hist(E(g)$weight, breaks=100))
 
 
 igraph.options(vertex.size=5, 
                vertex.label=NA, 
-               vertex.color="orange", 
+               vertex.color="#29723e", 
                edge.size=15, 
-               edge.color="blue",
+               edge.color="#ff5900",
                cex.main=0.8)
 
 as_long_data_frame(g) %>%
   write_csv("./results/graph_as_df.csv")
 
 g %>% write_graph("./results/full_graph.csv", format="graphml")
-plot(g)
+plot(g, layput = layout_with_mds)
 
 print("Process completed")
