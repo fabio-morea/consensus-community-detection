@@ -37,4 +37,18 @@ g <- graph_from_adjacency_matrix(adjm, weighted=TRUE,mode='directed')
 
 hist(E(g)$weight, breaks=100)
 
+
+igraph.options(vertex.size=5, 
+               vertex.label=NA, 
+               vertex.color="orange", 
+               edge.size=15, 
+               edge.color="blue",
+               cex.main=0.8)
+
+as_long_data_frame(g) %>%
+  write_csv("graph_as_df.csv")
+
+g %>% write_graph("full_graph.csv", format="graphml")
+plot(g)
+
 print("Process completed")

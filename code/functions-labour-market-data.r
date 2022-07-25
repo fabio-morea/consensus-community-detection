@@ -37,7 +37,8 @@ make.ids.conversion.table <- function(data, echo= FALSE){
     sorted.employees <- data %>%
         mutate(data_inizio = min(data_inizio))%>%
         mutate(data_fine = max(data_fine))%>%
-        arrange(data_nascita, iso3, genere, data_inizio, id_cittadino)%>%
+        mutate(avvio = ifelse(saldo==1,TRUE,FALSE))%>%
+        arrange(data_nascita, iso3, genere, data_inizio, id_cittadino, saldo)%>%
         group_by(data_nascita,  iso3, genere)%>%
         unique()
 
@@ -59,7 +60,13 @@ make.ids.conversion.table <- function(data, echo= FALSE){
         nat = sorted.employees$iso3[i]
         gen = sorted.employees$genere[i]
         d_ini = sorted.employees$data_inizio[i]
-        interval = time_length(d_ini-d_fin_prec,"years")
+
+        if (sorted.employees$avvio[i]==TRUE){
+            interval = time_length(d_ini-d_fin_prec,"years")
+        }
+        else{
+            interval = -1.0
+        }
         
         if (idcit == idprec) {
             #same id hence same person
@@ -69,7 +76,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
         else {
             #different id
             if( (interval >= 0) & (dob==dob_prev)& (nat==nat_prev)& (gen==gen_prev)) {
-                #interval ok, it is the same person despite differente id
+                #interval ok, saldo == +1, hence it is the same person despite differente id
                 d_fin_prec=d_ini
                 #print(paste("different id, all the rest ok", ii,idcit,idprec))
         }
@@ -99,6 +106,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
 
 # mate a table of transitions #################################################
 make.transitions.table <- function(contracts, echo= FALSE){
+    debug.examples <-c(1716,1549)
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
 
     experience <- contracts %>%
@@ -122,21 +130,23 @@ make.transitions.table <- function(contracts, echo= FALSE){
     idcs <- unique(contracts$idempl)  
     for(iii in idcs){
         tmp = experience%>% filter(idempl==iii)
-        print(paste("Procesing employee ", iii, ncontracts ))
-        print(paste("contract ", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
-        print(paste("contract ", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
-        
         ncontracts = nrow(tmp)
         nn=ncontracts-1
         if (ncontracts>1){
             for (i in 1:nn){
+                if (iii %in% debug.examples ){
+                    print(paste("******* Procesing employee ", iii ))
+                    print(paste("contract i", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
+                    print(paste("contract i+1", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
+                    print("---")
+                }
                 empl <- tmp$idempl[i+1]
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
                 qualif = tmp$qualifica_codice[i+1]
                 d_start2 <- ymd(tmp$data_inizio[i+1])
                 tempdate <- ymd(tmp$data_fine[i])
-                if (is.na(tempdate))  
+                if (is.na(tempdate))   # nolint
                     {d_end1 <- d_start2}
                 else 
                     {d_end1   <- tempdate}
@@ -146,7 +156,7 @@ make.transitions.table <- function(contracts, echo= FALSE){
                 if (gap < 0 ){
                     d_end1<-d_start2
                     gap<-0
-                    print("Reset gap = 0")
+                    #print("Reset gap = 0")
                 }
                 transitions <- transitions %>% add_row(
                     empl=empl,
@@ -157,7 +167,13 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     date_start2 = d_start2,
                     gap=gap,
                     ww=ww)
-            } 
+
+                if (iii %in% debug.examples ){
+                    print(paste("Date End 1",d_end1))
+                    print(paste("Date Start 2",d_start2))
+                }
+
+             } 
         }
     }
     transitions <- transitions %>% 
