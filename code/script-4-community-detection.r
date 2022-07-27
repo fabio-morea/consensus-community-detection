@@ -47,7 +47,7 @@ clusters_eb <- cluster_edge_betweenness(gc,
                          modularity = TRUE,
                          membership = TRUE)
                            
-
+print(clusters_eb$membership)
 cluster_summary <- clusters_eb$membership %>%
     as_tibble_col()%>%
     mutate(companies = clusters_eb$names)%>%
@@ -56,7 +56,9 @@ cluster_summary <- clusters_eb$membership %>%
     arrange(desc(n)) 
 
 # membership stored in igraph object
-gc$cl_eb <- clusters_eb$membership
+V(gc)$cl_eb <- membership(clusters_eb)
+gc <- delete_vertex_attr(gc, "id")
+ 
 
 # saving
 print("Saving giant component and edge betweenneess membership...")
