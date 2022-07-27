@@ -47,7 +47,6 @@ clusters_eb <- cluster_edge_betweenness(gc,
                          modularity = TRUE,
                          membership = TRUE)
                            
-print(clusters_eb$membership)
 cluster_summary <- clusters_eb$membership %>%
     as_tibble_col()%>%
     mutate(companies = clusters_eb$names)%>%
@@ -58,7 +57,6 @@ cluster_summary <- clusters_eb$membership %>%
 # membership stored in igraph object
 V(gc)$cl_eb <- membership(clusters_eb)
 gc <- delete_vertex_attr(gc, "id")
- 
 
 # saving
 print("Saving giant component and edge betweenneess membership...")
@@ -71,12 +69,7 @@ print(cluster_summary)
 windows();plot(sort(cluster_summary$n), main="Cluster size in the case of maximum modularity")
   
 my_tab <- table(clusters_eb$membership)
-#    as.data.frame() %>% 
-#    arrange(desc(Freq)) %>%
-
-
 print(my_tab)
 windows();plot(my_tab[my_tab>3])
 
- 
 print("Script completed.")
