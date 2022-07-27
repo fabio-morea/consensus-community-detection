@@ -20,7 +20,7 @@ library(igraph)
 
 ## load graph
 print("Loading data...")
-g <- read_graph("./results/full_graph.csv", format="graphml")
+g <- read_graph("./results/graph.csv", format="graphml")
 
 windows();plot(g,
      layout=layout_with_mds,
@@ -80,4 +80,13 @@ windows();plot(oc,
              layout=layout.fruchterman.reingold)
 title(main=plot_title,cex.main=1,col.main="black")
 
-print("Script completed.")
+
+
+# saving
+print("Saving giant component ...")
+g %>% write_graph("./results/giant_component.csv", format="graphml")
+as_long_data_frame(g) %>% write_csv("./results/giant_component_as_df.csv")
+
+ print("Process completed, please check results folder.")
+
+ 

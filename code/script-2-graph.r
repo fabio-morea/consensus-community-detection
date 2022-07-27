@@ -97,7 +97,7 @@ dev.off()
 
 # saving
 print("Saving results...")
-g %>% write_graph("./results/full_graph.csv", format="graphml")
+g %>% write_graph("./results/graph.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 
  print("Process completed, please check results folder.")

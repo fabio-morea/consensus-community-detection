@@ -1,4 +1,15 @@
 # LMN Labour Market Network analysis and community detection
+Script1: data preparation
+Script2: generate the adjacency matrix and graph
+Script3: analyse degree, coreness and components
+Script4: clustering: edge betweenness, eigenvector, Louvian and Leided
+Script5: consensus clustering
+
+functions:
+functions-labour-market-data.py
+functions-network-analysis.py
+
+
 
 
 
