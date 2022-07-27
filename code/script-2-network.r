@@ -49,21 +49,28 @@ g %>% write_graph("./results/full_graph.csv", format="graphml")
 #windows();plot(g, layout = layout_with_mds)
 
 #Degree of the whole graph
-degree_g  <- igraph::degree(g, mode = "all", normalized = FALSE)
-V(g)$deg <- degree_g
+degree_g    <- igraph::degree(g, mode = "all", normalized = FALSE)
+V(g)$deg    <- degree_g
 
- 
-filename <- "./img/figure1.png"
-png(filename)
-
-hist_degree<- ggplot(data.frame(degree_g), aes(degree_g)) +          
-  geom_histogram(bins = 50,color = "black", fill = "green")+scale_y_log10()+
-  theme_classic()
-
-print(hist_degree)
-
-dev.off()
+degree_g_n  <- igraph::degree(g, mode = "all", normalized = TRUE)
+V(g)$deg    <- degree_g_n
 
 
+# histogram of graph degree
+histogram.degree.png <- function(data, filename){
+    png(filename)
+    fig <- data.frame(data) %>% 
+      ggplot(aes(data)) +          
+      geom_histogram(bins = 50,color = "black", fill = "green")+
+      scale_y_log10()+
+      theme_classic()
+    print(fig)
+    dev.off()
+    return(1)
+}
 
-print("Process completed, Check img folder for images and result folder for other files.")
+histogram.degree.png(degree_g,   "./results/figures/figure_degree.png")
+histogram.degree.png(degree_g_n, "./results/figures/figure_degree_normalized.png")
+
+
+print("Process completed, please check results folder.")
