@@ -19,14 +19,27 @@ echo <- TRUE
 library(tidyverse)
 library(igraph)
 library(ggplot2)
+library(infotheo)
+library (glue)
+
+# histogram of graph degree
+histogram.png <- function(data, filename){
+    png(filename)
+    fig <- data.frame(data) %>% 
+      ggplot(aes(data)) +          
+      geom_histogram(bins = 50,color = "black", fill = "#a2aca2")+
+      scale_y_log10()+
+      theme_classic()
+    print(fig)
+    dev.off()
+    return(1)
+}
+
 
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
             select(date_start2,cf1,cf2,empl,ww) %>%
             rename(dtrans = date_start2) 
-
-#print(links%>%head(500))
-
 
 links %>% # weight is limited between 0 and 1
   mutate(weight = if_else(ww>1,1,ww))%>%
@@ -43,34 +56,48 @@ igraph.options(vertex.size=2,
                edge.size=1, 
                edge.color="#ffffff")
 
-#as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 
-g %>% write_graph("./results/full_graph.csv", format="graphml")
-#windows();plot(g, layout = layout_with_mds)
-
-#Degree of the whole graph
+# Edges' weights
+print("Analysing weight...")
+weight_g <- E(g)$weight
+histogram.png(weight_g, "./results/figures/figure_weight.png")
+ 
+# Nodes' degree
+print("Analysing degree...")
+#degree_g_n  <- igraph::degree(g, mode = "all", normalized = TRUE)
 degree_g    <- igraph::degree(g, mode = "all", normalized = FALSE)
 V(g)$deg    <- degree_g
+histogram.png(degree_g,   "./results/figures/figure_degree.png")
 
-degree_g_n  <- igraph::degree(g, mode = "all", normalized = TRUE)
-V(g)$deg    <- degree_g_n
+# Coreness
+print("Analysing coreness...")
 
+coreness_g <- coreness(g) 
+V(g)$core <-coreness_g  #coreness of the whole graph including smaller components
 
-# histogram of graph degree
-histogram.degree.png <- function(data, filename){
-    png(filename)
-    fig <- data.frame(data) %>% 
-      ggplot(aes(data)) +          
-      geom_histogram(bins = 50,color = "black", fill = "green")+
-      scale_y_log10()+
-      theme_classic()
-    print(fig)
-    dev.off()
-    return(1)
-}
+histogram.png(coreness_g,   "./results/figures/figure_coreness.png")
 
-histogram.degree.png(degree_g,   "./results/figures/figure_degree.png")
-histogram.degree.png(degree_g_n, "./results/figures/figure_degree_normalized.png")
+mut_inf <- mutinformation(coreness_g,degree_g, method="emp")
+entr    <- sqrt(entropy(coreness_g) * entropy(degree_g) )
+NMI     <- round(mut_inf/ entr,3)
 
+scatterplot <- as_tibble_col(coreness_g) %>%
+                add_column(degree_g) %>%
+                mutate(coreness_g=value) %>%
+                ggplot() + 
+                geom_point(aes(y = degree_g, x = coreness_g))+
+                theme_classic()+
+                labs(title = "Comparison of degree and coreness of the full network",
+                            subtitle = glue("Normalized Mutual Information ", NMI),
+                            caption = glue("number of vertices: ",length(V(g))))
 
-print("Process completed, please check results folder.")
+png("./results/figures/figure_scatterplot.png")
+print(scatterplot)
+dev.off()
+
+# saving
+print("Saving results...")
+g %>% write_graph("./results/full_graph.csv", format="graphml")
+as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
+
+ print("Process completed, please check results folder.")
