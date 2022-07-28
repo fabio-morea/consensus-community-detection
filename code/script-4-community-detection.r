@@ -14,7 +14,7 @@
 shell("cls")
 
 ## debug mode
-debug <- FALSE
+debug <- TRUE
 echo <- TRUE
 
 ## load libraries
@@ -55,9 +55,7 @@ V(gc)$cl_eb <- membership(clusters_eb)
 gc <- delete_vertex_attr(gc, "id")
 
 # saving
-print("Saving giant component and edge betweenneess membership...")
-gc %>% write_graph("./results/gc_eb.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/gc_eb_df.csv")
+print("Saving edge betweenneess membership...")
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
 
 describe_communities(gc, clusters_eb)
@@ -66,22 +64,21 @@ print("EB completed.")
 ## community detection using Eigenvector algorithm  *************************************************************
 print("Community detection using Eigenvector algorithm...")
 
-clusters_ev <- cluster_leading_eigen (gc, 
+gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+clusters_ev <- cluster_leading_eigen (gc_undirected, 
   steps = -1,
   weights = NA,
-  start = NULL,
+  start = membership(clusters_eb),
   options = arpack_defaults,
   callback = NULL,
   extra = NULL,
-  env = parent.frame)-> clusters  
+  env = parent.frame) 
 
 # membership stored in igraph object
 V(gc)$cl_ev <- membership(clusters_ev)
 
 # saving
-print("Saving giant component and eigenvector membership...")
-gc %>% write_graph("./results/gc_ev.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/gc_ev_df.csv")
+print("Saving eigenvector membership...")
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
 
 describe_communities(gc, clusters_ev)
@@ -97,9 +94,7 @@ clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
 V(gc)$cl_lv <- membership(clusters_lv)
 
 # saving
-print("Saving giant component and eigenvector membership...")
-gc %>% write_graph("./results/gc_lv.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/gc_lv_df.csv")
+print("Saving eigenvector membership...")
 tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
 
 describe_communities(gc, clusters_lv)
@@ -115,12 +110,41 @@ clusters_ld <- cluster_leiden(gc_undirected,  resolution = 1)
 V(gc)$cl_ld <- membership(clusters_ld)
 
 # saving
-print("Saving giant component and eigenvector membership...")
-gc %>% write_graph("./results/gc_ld.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/gc_ld_df.csv")
+print("Saving Leiden membership...")
 tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
 
 describe_communities(gc, clusters_ld)
 print("Leiden completed.")
+
+
+print("Saving giant component with 4 different clusters membership...")
+gc %>% write_graph("./results/gc_communities.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/gc_communities_df.csv")
+
+community.size <- function(clusters, mm){
+  c_sizes <- table(membership(clusters) )%>%
+            sort( decreasing = TRUE)%>%
+            unname()
+
+  c_sizes <- tibble(c_sizes) %>% 
+    mutate(method=mm)%>%
+    mutate(i = 1:n())
+
+  return(c_sizes)
+}
+
+
+cc <- community.size(clusters_eb, mm="eb") 
+cc <- rbind(cc, community.size(clusters_ev, mm="ev") )
+cc <- rbind(cc, community.size(clusters_lv, mm="lv") )
+cc <- rbind(cc, community.size(clusters_ld, mm="ld") )
+
+
+figure<- ggplot(cc)+geom_line(aes(x=i,y=c_sizes, group=method))
+windows();plot(figure)
+print(cc)
+
+
+
 
 print("Script completed.")
