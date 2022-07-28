@@ -89,8 +89,9 @@ print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
-gc <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
-clusters_lv <- cluster_louvain(gc,  resolution = 1)
+
+gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
 
 # membership stored in igraph object
 V(gc)$cl_lv <- membership(clusters_lv)
@@ -99,9 +100,27 @@ V(gc)$cl_lv <- membership(clusters_lv)
 print("Saving giant component and eigenvector membership...")
 gc %>% write_graph("./results/gc_lv.csv", format="graphml")
 as_long_data_frame(gc) %>% write_csv("./results/gc_lv_df.csv")
-tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_lv.csv")
+tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
 
-describe_communities(gc, clusters_el)
+describe_communities(gc, clusters_lv)
+print("Louvian completed.")
+
+## community detection using Leiden algorithm  *************************************************************
+print("Community detection using Leiden algorithm...")
+
+gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+clusters_ld <- cluster_leiden(gc_undirected,  resolution = 1)
+
+# membership stored in igraph object
+V(gc)$cl_ld <- membership(clusters_ld)
+
+# saving
+print("Saving giant component and eigenvector membership...")
+gc %>% write_graph("./results/gc_ld.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/gc_ld_df.csv")
+tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
+
+describe_communities(gc, clusters_ld)
 print("Louvian completed.")
 
 print("Script completed.")
