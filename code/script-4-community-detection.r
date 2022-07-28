@@ -101,4 +101,7 @@ gc %>% write_graph("./results/gc_lv.csv", format="graphml")
 as_long_data_frame(gc) %>% write_csv("./results/gc_lv_df.csv")
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_lv.csv")
 
+describe_communities(gc, clusters_el)
+print("Louvian completed.")
+
 print("Script completed.")
