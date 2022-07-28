@@ -121,6 +121,6 @@ as_long_data_frame(gc) %>% write_csv("./results/gc_ld_df.csv")
 tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
 
 describe_communities(gc, clusters_ld)
-print("Louvian completed.")
+print("Leiden completed.")
 
 print("Script completed.")
