@@ -14,7 +14,7 @@
 shell("cls")
 
 ## debug mode
-debug <- TRUE
+debug <- FALSE
 echo <- TRUE
 
 ## load libraries
@@ -140,7 +140,12 @@ cc <- rbind(cc, community.size(clusters_lv, mm="lv") )
 cc <- rbind(cc, community.size(clusters_ld, mm="ld") )
 
 
-figure<- ggplot(cc)+geom_line(aes(x=i,y=c_sizes, group=method))
+figure<- ggplot(cc)+
+geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
+geom_point(aes(x=i,y=c_sizes, group=method, col=method))+
+theme_light()+
+facet_grid(method ~ .)
+
 windows();plot(figure)
 print(cc)
 
