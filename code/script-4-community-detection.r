@@ -13,20 +13,23 @@
 ## clear terminal
 shell("cls")
 
-
 ## debug mode
 debug <- FALSE
 echo <- TRUE
 
 ## load libraries
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 library(igraph)
+
+source("./code/functions-network-analysis.R")
 
 ## load graph
 print("Loading giant componente and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
 
-## community detection using Edge Betweenneess algorithm
+if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>3))}
+
+## community detection using Edge Betweenneess algorithm *************************************************************
 ## The edge betweenness score of an edge measures the number of shortest paths through it, 
 ## The idea of the edge betweenness based community structure detection is that it is likely that edges connecting separate modules 
 ## have high edge betweenness as all the shortest paths from one module to another must traverse through them. 
@@ -46,13 +49,6 @@ clusters_eb <- cluster_edge_betweenness(gc,
                          bridges = TRUE,
                          modularity = TRUE,
                          membership = TRUE)
-                           
-cluster_summary <- clusters_eb$membership %>%
-    as_tibble_col()%>%
-    mutate(companies = clusters_eb$names)%>%
-    group_by(value)%>%
-    tally()%>%
-    arrange(desc(n)) 
 
 # membership stored in igraph object
 V(gc)$cl_eb <- membership(clusters_eb)
@@ -62,14 +58,47 @@ gc <- delete_vertex_attr(gc, "id")
 print("Saving giant component and edge betweenneess membership...")
 gc %>% write_graph("./results/gc_eb.csv", format="graphml")
 as_long_data_frame(gc) %>% write_csv("./results/gc_eb_df.csv")
+tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
 
-print("A summary of clusters by size")
-print(cluster_summary)
-  
-windows();plot(sort(cluster_summary$n), main="Cluster size in the case of maximum modularity")
-  
-my_tab <- table(clusters_eb$membership)
-print(my_tab)
-windows();plot(my_tab[my_tab>3])
+describe_communities(gc, clusters_eb)
+print("EB completed.")
+
+## community detection using Eigenvector algorithm  *************************************************************
+print("Community detection using Eigenvector algorithm...")
+
+clusters_ev <- cluster_leading_eigen (gc, 
+  steps = -1,
+  weights = NA,
+  start = NULL,
+  options = arpack_defaults,
+  callback = NULL,
+  extra = NULL,
+  env = parent.frame)-> clusters  
+
+# membership stored in igraph object
+V(gc)$cl_ev <- membership(clusters_ev)
+
+# saving
+print("Saving giant component and eigenvector membership...")
+gc %>% write_graph("./results/gc_ev.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/gc_ev_df.csv")
+tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
+
+describe_communities(gc, clusters_ev)
+print("EV completed.")
+
+## community detection using Louvian algorithm  *************************************************************
+print("Community detection using Louvian algorithm...")
+gc <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+clusters_lv <- cluster_louvain(gc,  resolution = 1)
+
+# membership stored in igraph object
+V(gc)$cl_lv <- membership(clusters_lv)
+
+# saving
+print("Saving giant component and eigenvector membership...")
+gc %>% write_graph("./results/gc_lv.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/gc_lv_df.csv")
+tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_lv.csv")
 
 print("Script completed.")
