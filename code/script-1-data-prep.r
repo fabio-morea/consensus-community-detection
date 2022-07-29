@@ -6,7 +6,7 @@
 
 # SPDX-License-Identifier: CC-BY-4.0
 
-# GitLab: https://gitlab.com/fabio-morea-areasciencepark/greencodes 
+# GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-network 
 
 
 

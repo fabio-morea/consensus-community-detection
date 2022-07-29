@@ -1,12 +1,12 @@
 # Author: Fabio Morea @ Area Science Park
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
-#               Original data is not included in the package as it contains persnoal information
-#               Test data is random an contains no personal information
+#               Original data is not included in the package as it contains personal information
+#               Test data is contains no personal information
 
 # SPDX-License-Identifier: CC-BY-4.0
 
-# GitLab: https://gitlab.com/fabio-morea-areasciencepark/greencodes 
+# GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-network
 
 # script 4: community detection
 
@@ -57,8 +57,7 @@ gc <- delete_vertex_attr(gc, "id")
 # saving
 print("Saving edge betweenneess membership...")
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
-
-describe_communities(gc, clusters_eb)
+describe_communities(gc, clusters_eb, "betweenness")
 print("EB completed.")
 
 ## community detection using Eigenvector algorithm  *************************************************************
@@ -80,13 +79,11 @@ V(gc)$cl_ev <- membership(clusters_ev)
 # saving
 print("Saving eigenvector membership...")
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
-
-describe_communities(gc, clusters_ev)
+describe_communities(gc, clusters_ev, "eigenvector")
 print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
-
 gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
 clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
 
@@ -94,10 +91,9 @@ clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
 V(gc)$cl_lv <- membership(clusters_lv)
 
 # saving
-print("Saving eigenvector membership...")
+print("Saving Louvian membership...")
 tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
-
-describe_communities(gc, clusters_lv)
+describe_communities(gc, clusters_lv, "Louvian")
 print("Louvian completed.")
 
 ## community detection using Leiden algorithm  *************************************************************
@@ -105,51 +101,37 @@ print("Community detection using Leiden algorithm...")
 
 gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
 clusters_ld <- cluster_leiden(gc_undirected,  resolution = 1)
-
+print(clusters_ld)
 # membership stored in igraph object
 V(gc)$cl_ld <- membership(clusters_ld)
 
 # saving
 print("Saving Leiden membership...")
 tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
-
-describe_communities(gc, clusters_ld)
+describe_communities(gc, clusters_ld, "Leiden")
 print("Leiden completed.")
 
-
+## saving results *************************************************************************************************
 print("Saving giant component with 4 different clusters membership...")
 gc %>% write_graph("./results/gc_communities.csv", format="graphml")
 as_long_data_frame(gc) %>% write_csv("./results/gc_communities_df.csv")
 
-community.size <- function(clusters, mm){
-  c_sizes <- table(membership(clusters) )%>%
-            sort( decreasing = TRUE)%>%
-            unname()
+## comparing results of different methods *************************************************************************
+print("Summary of communities by size")
+cc <- community.size(clusters_eb, mm="betweenness") 
+cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
+cc <- rbind(cc, community.size(clusters_lv, mm="Louvian") )
+cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
-  c_sizes <- tibble(c_sizes) %>% 
-    mutate(method=mm)%>%
-    mutate(i = 1:n())
+non.trivial.communities <- cc %>% filter(c_sizes > 3)
 
-  return(c_sizes)
-}
-
-
-cc <- community.size(clusters_eb, mm="eb") 
-cc <- rbind(cc, community.size(clusters_ev, mm="ev") )
-cc <- rbind(cc, community.size(clusters_lv, mm="lv") )
-cc <- rbind(cc, community.size(clusters_ld, mm="ld") )
-
-
-figure<- ggplot(cc)+
+figure<- ggplot(non.trivial.communities)+
 geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
-geom_point(aes(x=i,y=c_sizes, group=method, col=method))+
-theme_light()+
-facet_grid(method ~ .)
-
-windows();plot(figure)
-print(cc)
-
-
+geom_point(size=5, aes(x=i,y=c_sizes, group=method, col=method))+
+theme_light()+theme(aspect.ratio=0.71)+
+facet_grid(. ~ method )
+plot(figure)
+ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
 
 print("Script completed.")

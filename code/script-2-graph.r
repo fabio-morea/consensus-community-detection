@@ -7,7 +7,7 @@
 
 # SPDX-License-Identifier: CC-BY-4.0
 
-# GitLab: https://gitlab.com/fabio-morea-areasciencepark/greencodes
+# GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-networks
 
 # script 2: generate adjacency matrix and network
 
