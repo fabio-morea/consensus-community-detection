@@ -14,12 +14,13 @@
 shell("cls")
 
 ## debug mode
-debug <- FALSE
+debug <- TRUE
 echo <- TRUE
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
 library(igraph)
+library(glue)
 
 source("./code/functions-network-analysis.R")
 
@@ -28,6 +29,10 @@ print("Loading giant componente and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
 
 if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>3))}
+
+# undirected graph to be used for algorithms that do not support directed
+gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+
 
 ## community detection using Edge Betweenneess algorithm *************************************************************
 ## The edge betweenness score of an edge measures the number of shortest paths through it, 
@@ -63,7 +68,6 @@ print("EB completed.")
 ## community detection using Eigenvector algorithm  *************************************************************
 print("Community detection using Eigenvector algorithm...")
 
-gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
 clusters_ev <- cluster_leading_eigen (gc_undirected, 
   steps = -1,
   weights = NA,
@@ -84,7 +88,6 @@ print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
-gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
 clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
 
 # membership stored in igraph object
@@ -99,7 +102,6 @@ print("Louvian completed.")
 ## community detection using Leiden algorithm  *************************************************************
 print("Community detection using Leiden algorithm...")
 
-gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
 clusters_ld <- cluster_leiden(gc_undirected,  resolution = 1)
 print(clusters_ld)
 # membership stored in igraph object
@@ -130,8 +132,75 @@ geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
 geom_point(size=5, aes(x=i,y=c_sizes, group=method, col=method))+
 theme_light()+theme(aspect.ratio=0.71)+
 facet_grid(. ~ method )
-plot(figure)
+windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
+
+
+
+cluster_N_times <- function(g, res, n_trials, min_cl_size, clustering_algorithm) {
+
+  results<-tibble(
+    m=0.0,
+    nnclust=as.integer(0),
+    random_resolution=1.0)%>%head(0)
+  all_clusters <- c()
+  m_best<-99999
+
+  for (i in 1:n_trials){
+    if (clustering_algorithm=="Louvian"){ 
+        random_resolution = as.numeric(sample(res, 1))
+        cluster_tmp <- cluster_louvain(g,  resolution = random_resolution)
+      }
+    else if (clustering_algorithm=="Leiden"){
+        cluster_tmp <- cluster_leiden(g,  resolution = res)    
+    }
+    else{
+        cluster_tmp <- cluster_edge_betweenness(g)   
+    }
+    
+    all_clusters<- cbind(all_clusters,cluster_tmp$membership)
+    m <- modularity (g,  cluster_tmp$membership)
+    if(m<m_best){
+        m_best<-m
+        i_best=i
+        best_clusters <- cluster_tmp 
+    }
+
+    nnclust <- max(best_clusters$membership)
+
+    results <- results %>% 
+        add_row(m,nnclust,random_resolution )
+  }
+  
+  t=glue("Modularity - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
+  #hist(results$m, main=t)
+  
+  t=glue("Number of clusters - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
+  #windows();hist(results$nnclust, main=t)
+  cluster_summary <- best_clusters$membership %>%
+        as_tibble_col()%>%
+        mutate(companies = best_clusters$names)%>%
+        group_by(value)%>%
+        tally()%>%
+        arrange(desc(n)) 
+  print(cluster_summary)
+
+  return(all_clusters)
+}
+
+res=c(0.90,0.95,1.0,1.05,1.1) 
+cl_louvian_200 <- cluster_N_times(g=gc_undirected, 
+    res=res,
+    n_trials=200, 
+    min_cl_size = 2,
+    clustering_algorithm="Louvian")  
+
+as.data.frame(cl_louvian_200,
+    row.names = NULL, 
+    col.names = NULL) %>% 
+    write_csv("./results/clusters_lv_200.csv", col_names=FALSE)
+
+show_subgraphs (gc, clusters_membership=cl_louvian_200[,1] ) 
 
 
 print("Script completed.")
