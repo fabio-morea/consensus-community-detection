@@ -200,7 +200,7 @@ as.data.frame(cl_louvian_200,
     col.names = NULL) %>% 
     write_csv("./results/clusters_lv_200.csv", col_names=FALSE)
 
-show_subgraphs (gc, clusters_membership=cl_louvian_200[,1] ) 
+show_subgraphs (gc, clusters_membership=cl_louvian_200[,1], nrows=2,ncols=3 ) 
 
 
 print("Script completed.")

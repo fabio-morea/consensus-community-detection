@@ -37,41 +37,38 @@ describe_communities <- function(g, clusters,mm){
 # TODO improve as per https://stackoverflow.com/questions/18250684/add-title-and-legend-to-igraph-plots
 
 
-show_subgraphs <- function( g, clusters_membership ) {
-    windows()
-  
-    par(mfrow=c(2,2))
+show_subgraphs <- function( g, clusters_membership,nrows, ncols ) {
 
+    nsubgraphs <- nrows*ncols
+    windows()
+    par(mfrow=c(nrows,ncols))
 
     cluster_summary <- clusters_membership%>% 
-      as_tibble_col()%>%
-      mutate(companies = V(g)$name)%>%
-      group_by(value)%>%
-      tally()%>%
-      arrange(desc(n))
+		as_tibble_col()%>%
+		mutate(companies = V(g)$name)%>%
+		group_by(value)%>%
+		tally()%>%
+		arrange(desc(n))
     
-    top_clusters_n <- cluster_summary%>%
-      filter(n>=2)%>%
-      pull(value)
+    list_clusters <- cluster_summary %>%
+		filter(n>1) %>%
+		unique() %>%
+		arrange(-n) %>%
+		pull(value) %>%
+		head(nsubgraphs)
     
-    top_clusters_n <- 4
-    
-    for (i in unique(top_clusters_n) ){
-        gi <- g %>% induced_subgraph(which(clusters_membership==i)) 
-        add_graph = FALSE
-        if (length(V(gi))> 2){
-            plot(gi, 
-                add=add_graph, # add more graphs in the same figure
-                edge.color="gray",
-                edge.width=E(gi)$weight/3,
-                vertex.color=factor(V(gi)$prov),
-                vertex.label=NA,
-                vertex.size=V(gi)$core,
-                layout=layout_with_kk) 
+    for (i in list_clusters ){
+		gi <- g %>% induced_subgraph(which(clusters_membership==i)) 
+		plot(gi, 
+			edge.color="gray",
+			edge.width=E(gi)$weight/2,
+      edge.arrow.size= E(gi)$weight/20,
+			vertex.color=factor(V(gi)$core),
+			vertex.label=NA,
+			vertex.size=V(gi)$core,
+			layout=layout.fruchterman.reingold) 
 
-            text(x=-2, y=1.2,  glue("induced subgraph of cluster ",i)  ,cex=1.2)
-            text(x=-2, y=1.0,  glue("number of nodes: ", length(V(gi)) ),cex=.7)
-            add_graph=TRUE
-        }
+		text(x=0, y=1.3,  glue("Community ",i)  ,cex=1.0)
+		text(x=0, y=1.2,  glue("number of nodes: ", length(V(gi)) ),cex=.8)
     }
 }
