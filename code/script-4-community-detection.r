@@ -197,11 +197,14 @@ while (more_clusers_to_be_found){
     print(paste("Cluster ", relevant_clusters, " has ", length(cluster_ii_members), " members"))
 
   }
-  print(paste("****>>>>", nrow(remaining_prob)))
-  if ( nrow(remaining_prob)  >2)  {more_clusers_to_be_found=TRUE} 
-  else{more_clusers_to_be_found=FALSE}
-  
-   
+  print(paste("****>>>> nrow remaining prob ", nrow(remaining_prob)))
+  	if ( nrow(remaining_prob)  > 3)  {
+		more_clusers_to_be_found=TRUE
+	} 
+  	else{
+		more_clusers_to_be_found=FALSE
+	}
+
 }
 
 show_subgraphs (gc, clusters_membership=consensus_clusters$membership, nrows=2,ncols=3,label="Consensus Louvian" ) 
