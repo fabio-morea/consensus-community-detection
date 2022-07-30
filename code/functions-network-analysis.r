@@ -15,29 +15,27 @@ community.size <- function(clusters, mm){
 
 
 describe_communities <- function(g, clusters,mm){
-  print(paste("describing clusters obtained by ", mm))
-
-    #clmem <- tibble(membership(clusters)) 
-    #print(table(clmem))
+    print(glue("Results of community detection by ", mm, " algorithm"))
+    sizedist=sort(as.vector(sizes(clusters)))
+    print(table(sizedist))
+    #windows();plot(sizedist)
+    
+    #print(table(membership(clusters)))
 
     #print(summary(clusters$membership))
     #boxplot(a ~ b, data = dataframe, xlab = "",  ylab = "", main = "")
     #windows();hist(sizes(clusters))
-    #sizedist=sort(as.vector(sizes(clusters)))
-    #windows();plot(sizedist)
+    
 
-    windows();plot(clusters,g,
-        vertex.size=2,
-        vertex.label=NA,
-        layout=layout.fruchterman.reingold,
-        main = mm
-        )
+
+    #windows();
+    #plot(clusters,g,vertex.size=2,vertex.label=NA,layout=layout.fruchterman.reingold,main = mm )
 }
 
 # TODO improve as per https://stackoverflow.com/questions/18250684/add-title-and-legend-to-igraph-plots
 
 
-show_subgraphs <- function( g, clusters_membership,nrows, ncols ) {
+show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" ) {
 
     nsubgraphs <- nrows*ncols
     windows()
@@ -58,17 +56,71 @@ show_subgraphs <- function( g, clusters_membership,nrows, ncols ) {
 		head(nsubgraphs)
     
     for (i in list_clusters ){
-		gi <- g %>% induced_subgraph(which(clusters_membership==i)) 
-		plot(gi, 
-			edge.color="gray",
-			edge.width=E(gi)$weight/2,
-      edge.arrow.size= E(gi)$weight/20,
-			vertex.color=factor(V(gi)$core),
-			vertex.label=NA,
-			vertex.size=V(gi)$core,
-			layout=layout.fruchterman.reingold) 
+      gi <- g %>% induced_subgraph(which(clusters_membership==i)) 
+      plot(gi, 
+        edge.color="gray",
+        edge.width=E(gi)$weight/2,
+        edge.arrow.size= E(gi)$weight/20,
+        vertex.color=factor(V(gi)$core),
+        vertex.label=NA,
+        vertex.size=V(gi)$core,
+        layout=layout.fruchterman.reingold) 
 
-		text(x=0, y=1.3,  glue("Community ",i)  ,cex=1.0)
-		text(x=0, y=1.2,  glue("number of nodes: ", length(V(gi)) ),cex=.8)
+      text(x=0, y=1.3,  glue(label," Community ",i)  ,cex=1.0)
+      text(x=0, y=1.1,  glue("number of nodes: ", length(V(gi)) ),cex=.8)
     }
+}
+
+
+
+cluster_N_times <- function(g, res, n_trials, min_cl_size, clustering_algorithm) {
+
+  results<-tibble(
+    m=0.0,
+    nnclust=as.integer(0),
+    random_resolution=1.0)%>%head(0)
+  all_clusters <- c()
+  m_best<-99999
+
+  for (i in 1:n_trials){
+    if (clustering_algorithm=="Louvian"){ 
+        random_resolution = as.numeric(sample(res, 1))
+        cluster_tmp <- cluster_louvain(g,  resolution = random_resolution)
+      }
+    else if (clustering_algorithm=="Leiden"){
+        cluster_tmp <- cluster_leiden(g,  resolution = res)    
+    }
+    else{
+        cluster_tmp <- cluster_edge_betweenness(g)   
+    }
+    
+    all_clusters<- cbind(all_clusters,cluster_tmp$membership)
+    m <- modularity (g,  cluster_tmp$membership)
+    if(m<m_best){
+        m_best<-m
+        i_best=i
+        best_clusters <- cluster_tmp 
+    }
+
+    nnclust <- max(best_clusters$membership)
+
+    results <- results %>% 
+        add_row(m,nnclust,random_resolution )
+  }
+  
+  t=glue("Modularity - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
+  #hist(results$m, main=t)
+  
+  t=glue("Number of clusters - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
+  #windows();hist(results$nnclust, main=t)
+  cluster_summary <- best_clusters$membership %>%
+        as_tibble_col()%>%
+        mutate(companies = best_clusters$names)%>%
+        group_by(value)%>%
+        tally()%>%
+        arrange(desc(n)) 
+
+  if (echo) {print(cluster_summary)}
+
+  return(all_clusters)
 }
