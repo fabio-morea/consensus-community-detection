@@ -15,7 +15,7 @@ shell("cls")
 
 ## debug mode
 debug <- FALSE
-echo <- FALSE
+echo <- TRUE
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -130,9 +130,7 @@ facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
-
-
-
+## CONSENSUS
 res=c(0.90,0.95,1.0,1.05,1.1) 
 cl_louvian_200 <- cluster_N_times(g=gc_undirected, 
     res=res,
@@ -145,7 +143,67 @@ as.data.frame(cl_louvian_200,
     col.names = NULL) %>% 
     write_csv("./results/clusters_lv_200.csv", col_names=FALSE)
 
-show_subgraphs (gc, clusters_membership=cl_louvian_200[,1], nrows=2,ncols=3,label="Consensus Louvian" ) 
+# inspect and compare the clustering results
+# in this case compare all 200 trials and calculate the probability that each company is in the same cluster of any other company
+# Then select as a cluster only those who have a probability > threshold 50%
+all_clusters <- cl_louvian_200 ##DEBUG
 
+
+ncompanies <- nrow(all_clusters)
+N_trials   <- ncol(all_clusters)
+x <- matrix(0, nrow=ncompanies, ncol=ncompanies)
+for (i in (1:N_trials)){
+  	nclusters <- max(all_clusters[,i])
+	for (k in 1:nclusters) {
+		samecluster <- (which(all_clusters[,i]==k))
+		nc <- length(samecluster)
+		for (t in 1:nc){
+			for (j in 1:nc){ 
+				x[samecluster[j],samecluster[t]] <- x[samecluster[j],samecluster[t]] +1
+			}
+      }
+    }
+}
+
+x<-x/N_trials#normalize
+print(mean(x))
+windows();heatmap(x)
+windows();hist(x[x>0.0])
+colnames(x)<-V(gc)$name
+rownames(x)<-V(gc)$name
+
+threshold = .5			# threshold to decide on membership
+ii=1 					# counts all clusters, including singletons
+relevant_clusters = 0  	# counts only clusters with 3 or more members
+
+consensus_clusters <- as_tibble_col(rownames(x))%>%
+	mutate(membership=0)
+more_clusers_to_be_found=TRUE
+
+N_trials   <- ncol(all_clusters)
+
+remaining_prob<-x
+
+while (more_clusers_to_be_found){
+  ii=ii+1
+  cluster_ii_members <- which(remaining_prob[1,]>threshold)
+  #print(cluster_ii_members)
+  clust_prob<- remaining_prob[cluster_ii_members,cluster_ii_members]
+  remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
+
+  if(length(cluster_ii_members)>=2) {
+    relevant_clusters <- relevant_clusters +1
+    consensus_clusters$membership[cluster_ii_members]<- relevant_clusters
+    print(paste("Cluster ", relevant_clusters, " has ", length(cluster_ii_members), " members"))
+
+  }
+  print(paste("****>>>>", nrow(remaining_prob)))
+  if ( nrow(remaining_prob)  >2)  {more_clusers_to_be_found=TRUE} 
+  else{more_clusers_to_be_found=FALSE}
+  
+   
+}
+
+show_subgraphs (gc, clusters_membership=consensus_clusters$membership, nrows=2,ncols=3,label="Consensus Louvian" ) 
 
 print("Script completed.")
