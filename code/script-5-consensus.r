@@ -10,13 +10,16 @@
 
 # script 5: consensus
 
-A good clusteing algoritm in this domain should identify clusters that
--	Have at leas min.point 
--	All trivial clusters of 1 or 2 points are grouped in a cluster 0 FRINGE
--	Each point is assigned with a PROBABILITY of being part of consensus cluster (as in fuzzy clustering) so we can identify points that are confidently placed in this cluster and points that are not. A result is a matrix of probabilities (N.points X N_clusters)
-We use consensus, similar to random forrest
--	Small perturbation of algoritm parameters and network (randomly exclude a fraction of elements with low coreness)
--	Pairwise omparison
+#A good clusteing algoritm in this domain should identify clusters that
+#-	Have at leas min.point 
+#-	All trivial clusters of 1 or 2 points are grouped in a cluster 0 FRINGE
+#-	Each point is assigned with a PROBABILITY of being part of consensus cluster (as in fuzzy clustering) so we can identify points that are confidently placed in this cluster and points that are not. A result is a matrix of probabilities (N.points X N_clusters)
+#- clusters have better ehomogeneity than the original network
+#- high intra cluster connections, low inter cluster connections
+
+#We use consensus, similar to random forrest
+#-	Small perturbation of algoritm parameters and network (randomly exclude a fraction of elements with low coreness)
+#-	Pairwise omparison
 
 
 ## clear terminal
@@ -24,7 +27,7 @@ shell("cls")
 
 ## debug mode
 debug <- F
-echo <- TRUE
+echo <- FALSE
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -37,7 +40,10 @@ source("./code/functions-network-analysis.R")
 print("Loading giant componente and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
 
-if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>2))}
+if (debug){
+    gc <- induced.subgraph(gc,which(V(gc)$core>3))
+    print("Debug mode")
+    }
 
 # undirected graph to be used for algorithms that do not support directed
 gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
@@ -104,7 +110,6 @@ ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
 
 while (more_clusers_to_be_found){
   cluster_ii_members <- which(remaining_prob[1,] > threshold)
-  clust_prob	<- remaining_prob[ cluster_ii_members, cluster_ii_members]
   remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
 
   if(length(cluster_ii_members)>=min.points) {
@@ -112,9 +117,7 @@ while (more_clusers_to_be_found){
     for (nn in names(cluster_ii_members)){
       ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster)
     }
-    
-    print(paste("Cluster ", current.cluster, " has ", length(cluster_ii_members), " members"))
-	  #print(names(cluster_ii_members))
+    if(echo){print(paste("Cluster ", current.cluster, " has ", length(cluster_ii_members), " members"))}
   }
   if ( nrow(remaining_prob)  > min.points)  {
     more_clusers_to_be_found=TRUE
@@ -151,5 +154,20 @@ show_subgraphs (gc_undirected,
 
 gc %>% write_graph("./results/gc_communities_consensus.csv", format="graphml")
 #as_long_data_frame(gc) %>% write_csv("./results/gc_communities_consensus_as_df.csv")
- 
+
+print("analysis...")
+print("heatmap by sorted nodes")
+sorted_nodes <- order(V(gc)$clust_cons)
+#windows();heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
+
+print("heatmap by clusters")
+m <- mixmat(gc,"clust_cons", use.density=TRUE )#... very slow...
+m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  as.data.frame() %>%
+  rownames_to_column("clusters") %>%
+  pivot_longer(-c(clusters), names_to = "samples", values_to = "values") %>%
+  ggplot(aes(x=samples, y=clusters, fill=values)) + 
+  geom_raster() + scale_fill_gradient(low = "white", high = "black")
+
+ggsave("hmg.png")
 print("Script completed.")

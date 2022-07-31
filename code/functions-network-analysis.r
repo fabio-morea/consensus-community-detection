@@ -73,7 +73,7 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
 
 
 
-cluster_N_times <- function(g, res, n_trials, min_cl_size, clustering_algorithm) {
+cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
 
   results<-tibble(
     m=0.0,
@@ -123,4 +123,36 @@ cluster_N_times <- function(g, res, n_trials, min_cl_size, clustering_algorithm)
   if (echo) {print(cluster_summary)}
 
   return(all_clusters)
+}
+
+
+
+mixmat <- function(mygraph, attrib, use.density=TRUE) {
+ 
+  require(igraph)
+  # get unique list of characteristics of the attribute
+  attlist <- sort(unique(get.vertex.attribute(mygraph,attrib)))
+  numatts <- length(attlist)
+  # build an empty mixing matrix by attribute
+  mm <- matrix(nrow=numatts,
+               ncol=numatts,
+               dimnames=list(attlist,attlist))
+ 
+  # calculate edge density for each matrix entry by pairing type
+  # lends itself to parallel if available
+  el <- get.edgelist(mygraph,names=FALSE)
+   
+  for (i in 1:numatts) {
+    for (j in 1:numatts) {
+      
+      tmp <- length(which(apply(el,1,function(x) {
+          get.vertex.attribute(mygraph, attrib, x[1] ) == attlist[i] && 
+          get.vertex.attribute(mygraph, attrib, x[2] ) == attlist[j]  } )))
+
+      mm[i,j] <- tmp
+    }  
+  }
+ 
+  # convert to proportional mixing matrix if desired (ie by edge density)
+  if (use.density) mm/ecount(mygraph) else mm
 }

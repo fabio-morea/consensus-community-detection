@@ -14,7 +14,7 @@
 shell("cls")
 
 ## debug mode
-debug <- FALSE
+debug <- TRUE
 echo <- TRUE
 
 ## load libraries
@@ -28,7 +28,7 @@ source("./code/functions-network-analysis.R")
 print("Loading giant componente and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
 
-if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>5))}
+if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>10))}
 
 # undirected graph to be used for algorithms that do not support directed
 gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
@@ -130,5 +130,8 @@ facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
+sorted_nodes <- order(V(gc)$clust_ev)
+print(sorted_nodes)
+heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("Script completed.")
