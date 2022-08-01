@@ -26,7 +26,7 @@
 shell("cls")
 
 ## debug mode
-debug <- F
+debug <- FALSE
 echo <- FALSE
 
 ## load libraries
@@ -37,7 +37,7 @@ library(glue)
 source("./code/functions-network-analysis.R")
 
 ## load graph
-print("Loading giant componente and making a graph...")
+print("Loading giant component and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
 
 if (debug){
@@ -103,7 +103,7 @@ more_clusers_to_be_found=TRUE
 N_trials   <- ncol(all_clusters)
 
 remaining_prob<-x
-min.points = 4
+min.points = 10
 
 print("identify clusters above min.points")
 ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
@@ -149,7 +149,7 @@ clusters_lvC <- make_clusters(
 show_subgraphs (gc_undirected, 
   clusters_membership = clusters_lvC$membership, 
   nrows=3,
-  ncols=3,
+  ncols=5,
   label="Consensus Louvian" ) 
 
 gc %>% write_graph("./results/gc_communities_consensus.csv", format="graphml")
@@ -161,13 +161,44 @@ sorted_nodes <- order(V(gc)$clust_cons)
 #windows();heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("heatmap by clusters")
-m <- mixmat(gc,"clust_cons", use.density=TRUE )#... very slow...
-m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+m <- mixmat(gc,"clust_cons", use.density=TRUE )
+mdf <- m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   as.data.frame() %>%
-  rownames_to_column("clusters") %>%
-  pivot_longer(-c(clusters), names_to = "samples", values_to = "values") %>%
-  ggplot(aes(x=samples, y=clusters, fill=values)) + 
-  geom_raster() + scale_fill_gradient(low = "white", high = "black")
+  rownames_to_column("from") %>%
+  pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
 
+clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
+# TODO add vertices info in the daa frame
+V(clusters_graph)$core <- graph.coreness(clusters_graph)
+V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE) 
+
+edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
+
+edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#18128e89")
+edgec=ifelse(edgew > 2 edgec,"#ffffff00")# no colour for weak links  
+print(edgew)
+vertexs<-V(clusters_graph)$strength  * 120 
+
+windows();plot(clusters_graph,
+                layout=layout.graphopt,
+                edge.color=edgec,
+                edge.width=edgew,
+                vertex.size=vertexs,
+                vertex.color = "#26b252",
+                vertex.label.font=1,
+                vertex.label.color="black")
+
+#vertex.color=factor(V(clusters_graph)$strength),
+#vertex.size=V(clusters_graph)$strength
+
+clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml")
+as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")
+
+mdf %>% write_csv("mdf.csv")
+  
+mdf %>%
+  ggplot(aes(x=from, y=to, fill=weight)) + 
+  geom_raster() + scale_fill_gradient(low = "white", high = "black")
 ggsave("hmg.png")
+
 print("Script completed.")

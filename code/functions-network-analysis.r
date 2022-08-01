@@ -1,6 +1,7 @@
 # functions for network analysis
 
 
+#####################################################################################
 community.size <- function(clusters, mm){
   c_sizes <- table(membership(clusters) )%>%
             sort( decreasing = TRUE)%>%
@@ -14,6 +15,7 @@ community.size <- function(clusters, mm){
 }
 
 
+#####################################################################################
 describe_communities <- function(g, clusters,mm){
     print(glue("Results of community detection by ", mm, " algorithm"))
     sizedist=sort(as.vector(sizes(clusters)))
@@ -35,6 +37,7 @@ describe_communities <- function(g, clusters,mm){
 # TODO improve as per https://stackoverflow.com/questions/18250684/add-title-and-legend-to-igraph-plots
 
 
+#####################################################################################
 show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" ) {
 
     nsubgraphs <- nrows*ncols
@@ -64,7 +67,7 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
         vertex.color=factor(V(gi)$core),
         vertex.label=NA,
         vertex.size=V(gi)$core,
-        layout=layout.fruchterman.reingold) 
+        layout=layout.graphopt) 
 
       text(x=0, y=1.3,  glue(label," Community ",i)  ,cex=1.0)
       text(x=0, y=1.1,  glue("number of nodes: ", length(V(gi)) ),cex=.8)
@@ -72,16 +75,14 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
 }
 
 
-
+#####################################################################################
 cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
-
   results<-tibble(
     m=0.0,
     nnclust=as.integer(0),
     random_resolution=1.0)%>%head(0)
   all_clusters <- c()
   m_best<-99999
-
   for (i in 1:n_trials){
     if (clustering_algorithm=="Louvian"){ 
         random_resolution = as.numeric(sample(res, 1))
@@ -93,7 +94,6 @@ cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
     else{
         cluster_tmp <- cluster_edge_betweenness(g)   
     }
-    
     all_clusters<- cbind(all_clusters,cluster_tmp$membership)
     m <- modularity (g,  cluster_tmp$membership)
     if(m<m_best){
@@ -127,6 +127,7 @@ cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
 
 
 
+#####################################################################################
 mixmat <- function(mygraph, attrib, use.density=TRUE) {
  
   require(igraph)
