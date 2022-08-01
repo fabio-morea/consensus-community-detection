@@ -103,7 +103,7 @@ more_clusers_to_be_found=TRUE
 N_trials   <- ncol(all_clusters)
 
 remaining_prob<-x
-min.points = 10
+min.points = 15
 
 print("identify clusters above min.points")
 ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
@@ -174,17 +174,17 @@ V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE)
 
 edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
-edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#18128e89")
-edgec=ifelse(edgew > 2, edgec,"#ffffff00")# no colour for weak links  
+edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#07d84d6d")
+edgec=ifelse(edgew > 1, edgec,"#ffffff00")# no colour for weak links  
 print(edgew)
-vertexs<-V(clusters_graph)$strength  * 120 
+vertexs<-V(clusters_graph)$strength  * 200 
 
 windows();plot(clusters_graph,
                 layout=layout.graphopt,
                 edge.color=edgec,
                 edge.width=edgew,
                 vertex.size=vertexs,
-                vertex.color = "#26b252",
+                vertex.color = "#04b0ff",
                 vertex.label.font=1,
                 vertex.label.color="black")
 
