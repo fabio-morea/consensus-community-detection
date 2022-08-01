@@ -175,7 +175,7 @@ V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE)
 edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
 edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#18128e89")
-edgec=ifelse(edgew > 2 edgec,"#ffffff00")# no colour for weak links  
+edgec=ifelse(edgew > 2, edgec,"#ffffff00")# no colour for weak links  
 print(edgew)
 vertexs<-V(clusters_graph)$strength  * 120 
 
