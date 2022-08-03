@@ -38,17 +38,19 @@ histogram.png <- function(data, filename){
 
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
-            select(date_start2,cf1,cf2,empl,ww) %>%
-            rename(dtrans = date_start2) 
+            select(date_start2,cf1,cf2,empl,ww,q3) %>%
+            mutate(yy = year(date_start2))%>%
+            select(-date_start2)
+            
+# weight is limited between 0 and maxWeight
+maxWeight <- 10.0
+links %>% 
+  mutate(weight = if_else(ww>maxWeight,maxWeight,ww))%>%
+  relocate(cf1,cf2,weight,q3)-> links###### TODO: this shoud happen in script 1
 
-links %>% # weight is limited between 0 and 1
-  mutate(weight = if_else(ww>1,1,ww))%>%
-  relocate(cf1,cf2,weight)-> links
-
-gdf <- graph.data.frame(links, directed=T)
-adjm <- as_adjacency_matrix(gdf, attr = "ww",sparse = T)
-
-g <- graph_from_adjacency_matrix(adjm, weighted=TRUE,mode='directed') 
+g <- graph.data.frame(links, directed=T)
+#adjm <- as_adjacency_matrix(gdf, attr = "ww",sparse = T)
+#g <- graph_from_adjacency_matrix(adjm, weighted=TRUE,mode='directed') 
 
 igraph.options(vertex.size=2, 
                vertex.label=NA, 
@@ -56,10 +58,9 @@ igraph.options(vertex.size=2,
                edge.size=1, 
                edge.color="#ffffff")
 
-
 # Edges' weights
 print("Analysing weight...")
-weight_g <- E(g)$weight
+weight_g <- round(E(g)$weight,3)
 histogram.png(weight_g, "./results/figures/figure_weight.png")
  
 # Nodes' degree
@@ -68,6 +69,10 @@ print("Analysing degree...")
 degree_g    <- igraph::degree(g, mode = "all", normalized = FALSE)
 V(g)$deg    <- degree_g
 histogram.png(degree_g,   "./results/figures/figure_degree.png")
+
+str_g    <- igraph::strength(g)
+V(g)$str    <- str_g
+histogram.png(str_g,   "./results/figures/figure_str.png")
 
 # Coreness
 print("Analysing coreness...")

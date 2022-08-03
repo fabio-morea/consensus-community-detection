@@ -123,13 +123,15 @@ transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")
 
 links <- transitions.table %>%
-    select(empl, cf1, cf2, date_end1, date_start2, gap, ww)%>% 
+    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
+    mutate(q3=substring(qualif,1,5))%>%select(-qualif)%>%
     unique()%>%
     arrange(date_start2) 
 
 links %>% write_csv("./tmp/links.csv")
 
 selected.organisations <- tolower(unique( c(links$cf1,links$cf2) ))
+print(selected.organisations)
 orgs <- make.organisations.table(data,selected.organisations )
 orgs %>% write_csv("./tmp/organisations.csv")
 

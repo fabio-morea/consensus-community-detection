@@ -106,7 +106,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
 
 # mate a table of transitions #################################################
 make.transitions.table <- function(contracts, echo= FALSE){
-    debug.examples <-c(1716,1549)
+    #debug.examples <-c(1716,1549)
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
 
     experience <- contracts %>%
