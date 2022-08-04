@@ -130,17 +130,15 @@ links <- transitions.table %>%
 
 links %>% write_csv("./tmp/links.csv")
 
-selected.organisations <- tolower(unique( c(links$cf1,links$cf2) ))
-print(selected.organisations)
-orgs <- make.organisations.table(data,selected.organisations )
+selected.organisations <- toupper(unique( c(links$cf1,links$cf2) ))
+orgs <- make.organisations.table(contracts,selected.organisations )
 orgs %>% write_csv("./tmp/organisations.csv")
 
 
-## Debug: add a preliminary check that the dates are consistent
+## Debug: SOLVED - check again with new data - add a preliminary check that the dates are consistent
 ## we expect that all transitions are within the range of selected years 2014-2015 but there are more
 ## eg employee 437 - links:
 ## 1983-07-04,437,CF_00164830309,CF_04030970968,31.822039698836413,1
-
 ## CONTROLLARE LINKS CON LE DOPPIE DATE: C'è QUALCOSA CHE NON QUADRA
 ## LA DATA 1 E DATA 2 NON SONO NEL RANGE PREVISTO
 ## E IN ALCUNI CASI SONO INVERTITE

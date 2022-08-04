@@ -212,17 +212,17 @@ make.transitions.table <- function(contracts, echo= FALSE){
 
 
 make.organisations.table <- function(data, selected.organisations){
-    
+    #print(data$CF)
     org_locations = data %>% 
     select(CF, az_ragione_soc, 
         sede_op_comune,sede_op_indirizzo,sede_op_provincia,
-        SLL_codice, SLL_nome,comune_istat,sede_op_ateco,)%>%
+         SLL_nome,sede_op_ateco,)%>%
         unique()%>%
     filter(CF %in%  selected.organisations)
 
     #add a unique id for each local unit 
     org_locations<- org_locations%>%
-        group_by(CF, comune_istat, sede_op_indirizzo)%>%
+        group_by(CF, sede_op_comune, sede_op_indirizzo)%>%
         mutate(local_unit_id = cur_group_id())%>%
         relocate(local_unit_id)%>%
         ungroup()%>%
