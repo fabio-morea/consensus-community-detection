@@ -27,6 +27,9 @@ source("./code/functions-network-analysis.R")
 ## load graph
 print("Loading giant componente and making a graph...")
 gc <- read_graph("./results/giant_component.csv", format="graphml")
+## TODO at this stage we do community detection on giant componennt, 
+## but this overlooks a relevant opportunity: communities are level-1 clusters
+## and we should do hiearchical clustering
 
 if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>10))}
 
