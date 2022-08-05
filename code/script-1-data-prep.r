@@ -124,7 +124,8 @@ transitions.table %>% write_csv("./tmp/transitions.csv")
 
 links <- transitions.table %>%
     select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
-    mutate(q3=substring(qualif,1,5))%>%select(-qualif)%>%
+    mutate(q3=substring(qualif,1,5))%>%
+    mutate(q5=substring(qualif,1,5))%>%
     unique()%>%
     arrange(date_start2) 
 

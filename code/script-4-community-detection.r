@@ -33,8 +33,9 @@ gc <- read_graph("./results/giant_component.csv", format="graphml")
 
 if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>10))}
 
+windows();plot(gc)
 # undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+gc_undirected <- as.undirected(gc, mode = "collapse")#, edge.attr.comb = "sum")
 
 
 ## community detection using Edge Betweenneess algorithm *************************************************************

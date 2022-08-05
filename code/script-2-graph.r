@@ -17,6 +17,7 @@ echo <- TRUE
 
 ## load libraries
 library(tidyverse)
+library(lubridate)
 library(igraph)
 library(ggplot2)
 library(infotheo)
@@ -38,7 +39,7 @@ histogram.png <- function(data, filename){
 
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
-            select(date_start2,cf1,cf2,empl,ww,q3) %>%
+            select(date_start2,cf1,cf2,empl,ww,qualif,q5,q3) %>%
             mutate(yy = year(date_start2))%>%
             select(-date_start2)
             

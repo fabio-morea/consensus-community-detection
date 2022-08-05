@@ -38,7 +38,7 @@ source("./code/functions-network-analysis.R")
 
 ## load graph
 print("Loading giant component and making a graph...")
-gc <- read_graph("./results/giant_component.csv", format="graphml")
+gc <- read_graph("./results/graph.csv", format="graphml")
 
 if (debug){
     gc <- induced.subgraph(gc,which(V(gc)$core>3))
@@ -46,7 +46,7 @@ if (debug){
     }
 
 # undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(gc,mode = "collapse", edge.attr.comb = "sum")
+gc_undirected <- as.undirected(gc,mode = "collapse")# edge.attr.comb = "sum")
 
 print("consensus clustering...")
 ## CONSENSUS
