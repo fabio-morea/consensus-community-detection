@@ -152,8 +152,8 @@ show_subgraphs (gc_undirected,
   ncols=5,
   label="Consensus Louvian" ) 
 
-gc %>% write_graph("./results/gc_communities_consensus.csv", format="graphml")
-#as_long_data_frame(gc) %>% write_csv("./results/gc_communities_consensus_as_df.csv")
+gc %>% write_graph("./results/communities_consensus.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/communities_consensus_as_df.csv")
 
 print("analysis...")
 print("heatmap by sorted nodes")
