@@ -38,15 +38,15 @@ source("./code/functions-network-analysis.R")
 
 ## load graph
 print("Loading giant component and making a graph...")
-gc <- read_graph("./results/graph.csv", format="graphml")
+g <- read_graph("./results/graph.csv", format="graphml")
+gc <- induced.subgraph(g, V(g)[ CL0 == 1])
+# undirected graph to be used for algorithms that do not support directed
+gc_undirected <- as.undirected(gc,mode = "collapse")# edge.attr.comb = "sum")
 
 if (debug){
     gc <- induced.subgraph(gc,which(V(gc)$core>3))
     print("Debug mode")
     }
-
-# undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(gc,mode = "collapse")# edge.attr.comb = "sum")
 
 print("consensus clustering...")
 ## CONSENSUS
@@ -89,7 +89,7 @@ as.data.frame(x)%>%write_csv("./results/x.csv")
 x<-x/N_trials#normalize
 #print(mean(x))
 #windows();heatmap(x)
-#windows();hist(x[x>0.0])
+windows();hist(x[x>0.0])
 colnames(x)<-V(gc)$name
 rownames(x)<-V(gc)$name
 

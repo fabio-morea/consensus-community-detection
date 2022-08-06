@@ -30,14 +30,12 @@ windows();plot(g,
      vertex.color="black",
      vertex.size=2,
      vertex.label=NA)
- 
-  
-
 
 ## identify components
 print("Analysing components...")
 V(g)$comp<-components(g)$membership
-table(components(g)$membership)
+
+# giant component
 maxcomp<- which.max(table(components(g)$membership))
 
 ##plot giant component in red
@@ -51,7 +49,6 @@ windows();plot(g,
              vertex.size=5, 
              layout=layout_with_mds)
 title(main=plot_title,cex.main=1,col.main="black")
-
 
 # plot only giant component
 print("Plotting giant component in separate window...")
@@ -67,7 +64,6 @@ windows();plot(gg,
              layout=layout.fruchterman.reingold)
 title(main=plot_title,cex.main=1,col.main="black")
 
-
 print("Plotting other components in separate window...")
 oc <- induced_subgraph(g, V(g)[ V(g)$comp != maxcomp ])
 plot_title = "Other components "
@@ -80,13 +76,33 @@ windows();plot(oc,
              layout=layout.fruchterman.reingold)
 title(main=plot_title,cex.main=1,col.main="black")
 
+# # saving
+# print("Saving giant component ...")
+# g %>% write_graph("./results/giant_component.csv", format="graphml")
+# as_long_data_frame(g) %>% write_csv("./results/giant_component_as_df.csv")
 
+
+# number components in decreasing order and select only those above min_size
+min_size <- 2
+conversion_table <- as.data.frame(table(components(g)$membership))%>%
+     rename(comp_size = Freq)%>%
+     rename(comp_number=Var1)%>%
+     arrange(-comp_size)%>%
+     rownames_to_column("cluster_level_0")%>%
+     mutate(cluster_level_0 = as.integer(cluster_level_0))%>%
+     mutate(cluster_level_0 = if_else(comp_size > min_size, cluster_level_0, as.integer(0) ))
+
+assigned_comps <- as.data.frame(components(g)$membership)%>%
+     rename(comp_number = "components(g)$membership")%>%
+     merge(conversion_table,by="comp_number")
+
+V(g)$CL0<-assigned_comps$cluster_level_0
 
 # saving
-print("Saving giant component ...")
-g %>% write_graph("./results/giant_component.csv", format="graphml")
-as_long_data_frame(g) %>% write_csv("./results/giant_component_as_df.csv")
+print("Saving results...")
+g %>% write_graph("./results/graph.csv", format="graphml")
+as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 
- print("Process completed, please check results folder.")
+print("Process completed, please check results folder.")
 
  

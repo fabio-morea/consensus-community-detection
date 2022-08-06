@@ -122,12 +122,27 @@ contracts %>% write_csv("./tmp/contracts.csv")
 transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")
 
+# links <- transitions.table %>%
+#     select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
+#     mutate(q3=substring(qualif,1,5))%>%
+#     mutate(q5=substring(qualif,1,5))%>%
+#     unique()%>%
+#     arrange(date_start2) 
+
+qualif_groups <- read_excel("./tmp/profess_groups.xlsx", sheet="prof_groups") %>%
+    rename(qualif = qualifica_codice )%>%
+    select(qualif,group)
+
 links <- transitions.table %>%
     select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
-    mutate(q3=substring(qualif,1,5))%>%
-    mutate(q5=substring(qualif,1,5))%>%
-    unique()%>%
-    arrange(date_start2) 
+    merge( qualif_groups, by="qualif")%>%
+    arrange(date_start2) %>%
+    mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
+    relocate(cf1,cf2,ww,group)
+
+links <- links %>%
+    filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
+    filter(yy<=2021)     # not a complete year
 
 links %>% write_csv("./tmp/links.csv")
 

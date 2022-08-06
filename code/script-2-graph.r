@@ -17,6 +17,7 @@ echo <- TRUE
 
 ## load libraries
 library(tidyverse)
+library(readxl)
 library(lubridate)
 library(igraph)
 library(ggplot2)
@@ -36,28 +37,27 @@ histogram.png <- function(data, filename){
     return(1)
 }
 
-
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
-            select(date_start2,cf1,cf2,empl,ww,qualif,q5,q3) %>%
-            mutate(yy = year(date_start2))%>%
-            select(-date_start2)
+            select(cf1,cf2,ww,group,qualif) 
             
 # weight is limited between 0 and maxWeight
-maxWeight <- 10.0
-links %>% 
-  mutate(weight = if_else(ww>maxWeight,maxWeight,ww))%>%
-  relocate(cf1,cf2,weight,q3)-> links###### TODO: this shoud happen in script 1
+maxWeight <- 3.0
+links <- links %>% 
+  mutate(weight = if_else(ww > maxWeight, maxWeight, ww))
 
 g <- graph.data.frame(links, directed=T)
-#adjm <- as_adjacency_matrix(gdf, attr = "ww",sparse = T)
-#g <- graph_from_adjacency_matrix(adjm, weighted=TRUE,mode='directed') 
 
-igraph.options(vertex.size=2, 
-               vertex.label=NA, 
-               vertex.color="#29723e", 
-               edge.size=1, 
-               edge.color="#ffffff")
+igraph.options( vertex.size=2, 
+                vertex.label=NA, 
+                vertex.color="#29723e",
+                edge.size=1, 
+                edge.arrow.size = 0.5,
+                edge.color="gray",
+                layout=layout_with_mds)
+
+windows();plot(g)
+    
 
 # Edges' weights
 print("Analysing weight...")
@@ -106,4 +106,16 @@ print("Saving results...")
 g %>% write_graph("./results/graph.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 
- print("Process completed, please check results folder.")
+
+
+print("Graph completed and saved.")
+
+
+
+
+print(summary_table)
+summary_table <- 
+  as.data.frame.matrix(with(df_professions,table(vert,prof)))
+summary_table %>% write.csv("tmp.csv", quote=FALSE)
+
+print("Process completed, please check results folder.")

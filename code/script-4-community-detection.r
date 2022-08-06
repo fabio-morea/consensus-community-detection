@@ -14,7 +14,7 @@
 shell("cls")
 
 ## debug mode
-debug <- TRUE
+debug <- FALSE
 echo <- TRUE
 
 ## load libraries
@@ -26,7 +26,8 @@ source("./code/functions-network-analysis.R")
 
 ## load graph
 print("Loading giant componente and making a graph...")
-gc <- read_graph("./results/giant_component.csv", format="graphml")
+g <- read_graph("./results/graph.csv", format="graphml")
+gc <- induced.subgraph(g, V(g)[ CL0 == 1])
 ## TODO at this stage we do community detection on giant componennt, 
 ## but this overlooks a relevant opportunity: communities are level-1 clusters
 ## and we should do hiearchical clustering
@@ -114,8 +115,8 @@ print("Leiden completed.")
 
 ## saving results *************************************************************************************************
 if (echo){print("Saving giant component with 4 different clusters membership...")}
-gc %>% write_graph("./results/gc_communities.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/gc_communities_df.csv")
+gc %>% write_graph("./results/communities.csv", format="graphml")
+as_long_data_frame(gc) %>% write_csv("./results/communities_df.csv")
 
 ## comparing results of different methods *************************************************************************
 print("Summary of communities by size")
@@ -134,8 +135,8 @@ facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
-sorted_nodes <- order(V(gc)$clust_ev)
-print(sorted_nodes)
-heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
+#sorted_nodes <- order(V(gc)$cl_ev)
+#print(sorted_nodes)
+#heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("Script completed.")
