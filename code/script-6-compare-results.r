@@ -24,7 +24,7 @@ library(igraph)
 library(glue)
 library(tidyverse)
 library(readxl)
-library(gridExtra)
+library(ggpubr)
 
 
 source("./code/functions-cluster-attributes.R")
@@ -61,7 +61,11 @@ for (i in 0:50){
   current <- get.professional.groups(gi, cluster_name="current")
   print(current)
   if (nrow(current)>0){
-     
+      filename <- paste0("community_",i,".pdf")
+      print(filename)
+      pdf(file=filename)
+      par( mfrow= c(2,2) )
+
       data <- bind_rows(current,reference)
       data<-data%>%
         select(-Freq)%>%
@@ -70,11 +74,12 @@ for (i in 0:50){
         mutate(variation = (current/reference)-1)%>%
         arrange(variation)
 
-        p<-ggplot(data, aes(x=prof_groups,y=variation)) + 
+      p<-ggplot(data, aes(x=prof_groups,y=variation)) + 
           geom_col() + 
           theme_light() + 
           ggtitle(paste("Community", i , " variation of professional groups"))
-        windows();plot(p)
+      plot(p)
+      dev.off()
   }
   
 }
@@ -102,3 +107,42 @@ for (i in 0:50){
 # }
 
 print("Script completed.")
+
+
+i=2
+  print(i)
+  ci <- ( cl$mbshp == i )
+  gi <- induced.subgraph(g, V(g)[ ci ])
+  current <- get.professional.groups(gi, cluster_name="current")
+  if (nrow(current)>0){
+      filename <- paste0("community_",i,".pdf")
+      print(filename)
+      pdf(file=filename)
+      par( mfrow= c(2,2) )
+
+      data <- bind_rows(current,reference)
+      data<-data%>%
+        select(-Freq)%>%
+        pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
+        mutate(current = if_else(is.na(current), 0, current))%>%
+        mutate(variation = (current/reference)-1)%>%
+        arrange(variation)
+
+      p1<-ggplot(data, aes(x=prof_groups,y=variation)) + 
+          geom_col() + 
+          theme_light() + 
+          ggtitle(paste("Community", i , " variation of professional groups"))
+      
+      p2<-ggplot(data, aes(x=prof_groups,y=variation)) + 
+          geom_col() + 
+          theme_dark() + 
+          ggtitle(paste("Community", i , " variation of professional groups"))
+
+      windows();plot(ggarrange(p1,p2,p2,p1, 
+          labels = c("A", "B","C","D"),
+          ncol = 2, nrow = 2))
+
+
+ggexport(plotlist = c(p1,p2), filename = "test.pdf",
+         nrow = 2, ncol = 1)
+       
