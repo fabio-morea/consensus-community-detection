@@ -54,7 +54,9 @@ get.professional.groups <- function(g, cluster_name){
 cl <- read_csv("./results/clusters_CONSENSUS.csv")
 reference <- get.professional.groups(g, cluster_name="reference")
 
-for (i in 0:50){
+plot_list <- list()
+
+for (i in 0:9){
   print(i)
   ci <- ( cl$mbshp == i )
   gi <- induced.subgraph(g, V(g)[ ci ])
@@ -63,9 +65,6 @@ for (i in 0:50){
   if (nrow(current)>0){
       filename <- paste0("community_",i,".pdf")
       print(filename)
-      pdf(file=filename)
-      par( mfrow= c(2,2) )
-
       data <- bind_rows(current,reference)
       data<-data%>%
         select(-Freq)%>%
@@ -74,17 +73,20 @@ for (i in 0:50){
         mutate(variation = (current/reference)-1)%>%
         arrange(variation)
 
-      p<-ggplot(data, aes(x=prof_groups,y=variation)) + 
-          geom_col() + 
-          theme_light() + 
-          ggtitle(paste("Community", i , " variation of professional groups"))
-      plot(p)
-      dev.off()
+      p <- ggplot(data, aes(x=prof_groups,y=variation)) + 
+            geom_col() + 
+            theme_light() + 
+            ggtitle(paste("Community", i , " variation of professional groups"))
+      
+      plot_list[[i]] <- p
   }
-  
 }
+plot_grob <- arrangeGrob(grobs=plot_list)
+png("myplot.png")
+grid.arrange(plot_grob)
+dev.off()
 
-
+#
 # list_all_names <- read_csv("./tmp/organisations.csv")
 # list_all_CF <- read_csv("./results/clusters_CONSENSUS.csv")
 # ## create the subgraph
@@ -109,40 +111,43 @@ for (i in 0:50){
 print("Script completed.")
 
 
-i=2
-  print(i)
-  ci <- ( cl$mbshp == i )
-  gi <- induced.subgraph(g, V(g)[ ci ])
-  current <- get.professional.groups(gi, cluster_name="current")
-  if (nrow(current)>0){
-      filename <- paste0("community_",i,".pdf")
-      print(filename)
-      pdf(file=filename)
-      par( mfrow= c(2,2) )
+# i=2
+#   print(i)
+#   ci <- ( cl$mbshp == i )
+#   gi <- induced.subgraph(g, V(g)[ ci ])
+#   current <- get.professional.groups(gi, cluster_name="current")
 
-      data <- bind_rows(current,reference)
-      data<-data%>%
-        select(-Freq)%>%
-        pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
-        mutate(current = if_else(is.na(current), 0, current))%>%
-        mutate(variation = (current/reference)-1)%>%
-        arrange(variation)
+#       filename <- paste0("community_",i,".pdf")
+#       print(filename)
+#       pdf(file=filename)
+#       par( mfrow= c(2,2) )
 
-      p1<-ggplot(data, aes(x=prof_groups,y=variation)) + 
-          geom_col() + 
-          theme_light() + 
-          ggtitle(paste("Community", i , " variation of professional groups"))
+#       data <- bind_rows(current,reference)
+#       data<-data%>%
+#         select(-Freq)%>%
+#         pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
+#         mutate(current = if_else(is.na(current), 0, current))%>%
+#         mutate(variation = (current/reference)-1)%>%
+#         arrange(variation)
+
+#       p1<-ggplot(data, aes(x=prof_groups,y=variation)) + 
+#           geom_col() + 
+#           theme_light() + 
+#           ggtitle(paste("Community", i , " variation of professional groups"))
       
-      p2<-ggplot(data, aes(x=prof_groups,y=variation)) + 
-          geom_col() + 
-          theme_dark() + 
-          ggtitle(paste("Community", i , " variation of professional groups"))
+#       p2<-ggplot(data, aes(x=prof_groups,y=variation)) + 
+#           geom_col() + 
+#           theme_dark() + 
+#           ggtitle(paste("Community", i , " variation of professional groups"))
+      
+#       pps = ggarrange(p1,p2,p2,p1, 
+#           labels = c("A", "B","C","D"),
+#           ncol = 2, nrow = 2)
 
-      windows();plot(ggarrange(p1,p2,p2,p1, 
-          labels = c("A", "B","C","D"),
-          ncol = 2, nrow = 2))
+#       windows();plot(pps)
 
+ 
 
-ggexport(plotlist = c(p1,p2), filename = "test.pdf",
-         nrow = 2, ncol = 1)
-       
+# ggexport(plotlist = pps, filename = "test.pdf",
+#          nrow = 2, ncol = 1)
+  
