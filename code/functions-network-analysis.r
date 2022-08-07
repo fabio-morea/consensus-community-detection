@@ -45,18 +45,18 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
     par(mfrow=c(nrows,ncols))
 
     cluster_summary <- clusters_membership%>% 
-		as_tibble_col()%>%
-		mutate(companies = V(g)$name)%>%
-		group_by(value)%>%
-		tally()%>%
-		arrange(desc(n))
+      as_tibble_col()%>%
+      mutate(companies = V(g)$name)%>%
+      group_by(value)%>%
+      tally()%>%
+      arrange(desc(n))
     
     list_clusters <- cluster_summary %>%
-		filter(n>1) %>%
-		unique() %>%
-		arrange(-n) %>%
-		pull(value) %>%
-		head(nsubgraphs)
+      filter(n>1) %>%
+      unique() %>%
+      arrange(-n) %>%
+      pull(value) %>%
+      head(nsubgraphs)
     
     for (i in list_clusters ){
       gi <- g %>% induced_subgraph(which(clusters_membership==i)) 

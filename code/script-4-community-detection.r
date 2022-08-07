@@ -28,13 +28,13 @@ source("./code/functions-network-analysis.R")
 ## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
-gc <- induced.subgraph(g, V(g)[ CL0 == 1])
+g <- induced.subgraph(g, V(g)[ CL0 == 1])#giant component
 if (debug){
-    gc <- induced.subgraph(gc,which(V(gc)$core>3))
+    g <- induced.subgraph(g,which(V(g)$core>3))
     print("Debug mode")
     }
 # undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(g,mode = "each")
+g_undirected <- as.undirected(g,mode = "each")
 
 ## TODO at this stage we do community detection on giant componennt, 
 ## but this overlooks a relevant opportunity: communities are level-1 clusters
@@ -46,7 +46,7 @@ gc_undirected <- as.undirected(g,mode = "each")
 ## https://www.rdocumentation.org/packages/igraph/versions/1.3.2/topics/cluster_edge_betweenness
 print("Community detection using Edge Betweenneess algorithm...")
 
-clusters_eb <- cluster_edge_betweenness(gc, 
+clusters_eb <- cluster_edge_betweenness(g, 
                          weights = NA,
                          directed = TRUE,
                          edge.betweenness = TRUE,
@@ -56,70 +56,70 @@ clusters_eb <- cluster_edge_betweenness(gc,
                          membership = TRUE)
 
 # membership stored in igraph object
-V(gc)$cl_eb <- membership(clusters_eb)
-gc <- delete_vertex_attr(gc, "id")
+V(g)$cl_eb <- membership(clusters_eb)
+g <- delete_vertex_attr(g, "id")
 
 # saving
 if (echo){print("Saving edge betweenneess membership...")}
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
-describe_communities(gc, clusters_eb, "betweenness")
-show_subgraphs (gc, clusters_membership=membership(clusters_eb), nrows=2, ncols=4, label = "betweenness" ) 
+describe_communities(g, clusters_eb, "betweenness")
+show_subgraphs (g, clusters_membership=membership(clusters_eb), nrows=2, ncols=4, label = "betweenness" ) 
 print("EB completed.")
 
 ## community detection using Eigenvector algorithm  *************************************************************
 print("Community detection using Eigenvector algorithm...")
 
-clusters_ev <- cluster_leading_eigen (gc_undirected, 
+clusters_ev <- cluster_leading_eigen (g_undirected, 
 	steps = -1,
 	weights = NA,
-	#start = V(gc)$cl_eb,
+	#start = V(g)$cl_eb,
 	options = arpack_defaults,
 	callback = NULL,
 	extra = NULL,
 	env = parent.frame) 
 
 # membership stored in igraph object
-V(gc)$cl_ev <- membership(clusters_ev)
+V(g)$cl_ev <- membership(clusters_ev)
 
 # saving
 if (echo){print("Saving eigenvector membership...")}
 tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
-describe_communities(gc_undirected, clusters_ev, "eigenvector")
-show_subgraphs (gc_undirected, clusters_membership=membership(clusters_ev), nrows=2,ncols=4, label = "eigenvector" ) 
+describe_communities(g_undirected, clusters_ev, "eigenvector")
+show_subgraphs (g_undirected, clusters_membership=membership(clusters_ev), nrows=2,ncols=4, label = "eigenvector" ) 
 print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
-clusters_lv <- cluster_louvain(gc_undirected,  resolution = 1)
+clusters_lv <- cluster_louvain(g_undirected,  resolution = 1)
 
 # membership stored in igraph object
-V(gc)$cl_lv <- membership(clusters_lv)
+V(g)$cl_lv <- membership(clusters_lv)
 
 # saving
 if (echo){print("Saving Louvian membership...")}
 tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
-describe_communities(gc_undirected, clusters_lv, "Louvian")
-show_subgraphs (gc_undirected, clusters_membership=membership(clusters_lv), nrows=2,ncols=4, label = "Louvian" ) 
+describe_communities(g_undirected, clusters_lv, "Louvian")
+show_subgraphs (g_undirected, clusters_membership=membership(clusters_lv), nrows=2,ncols=4, label = "Louvian" ) 
 print("Louvian completed.")
 
 ## community detection using Leiden algorithm  *************************************************************
 print("Community detection using Leiden algorithm...")
 
-clusters_ld <- cluster_leiden(gc_undirected,  resolution = 1)
+clusters_ld <- cluster_leiden(g_undirected,  resolution = 1)
 # membership stored in igraph object
-V(gc)$cl_ld <- membership(clusters_ld)
+V(g)$cl_ld <- membership(clusters_ld)
 
 # saving
 print("Saving Leiden membership...")
 tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
-describe_communities(gc_undirected, clusters_ld, "Leiden")
-show_subgraphs (gc_undirected, clusters_membership=membership(clusters_ld), nrows=2,ncols=4, label = "Leiden"  ) 
+describe_communities(g_undirected, clusters_ld, "Leiden")
+show_subgraphs (g_undirected, clusters_membership=membership(clusters_ld), nrows=2,ncols=4, label = "Leiden"  ) 
 print("Leiden completed.")
 
 ## saving results *************************************************************************************************
 if (echo){print("Saving giant component with 4 different clusters membership...")}
-gc %>% write_graph("./results/communities.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/communities_df.csv")
+g %>% write_graph("./results/communities.csv", format="graphml")
+as_long_data_frame(g) %>% write_csv("./results/communities_df.csv")
 
 ## comparing results of different methods *************************************************************************
 print("Summary of communities by size")
@@ -138,7 +138,7 @@ facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
-#sorted_nodes <- order(V(gc)$cl_ev)
+#sorted_nodes <- order(V(g)$cl_ev)
 #print(sorted_nodes)
 #heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 

@@ -39,26 +39,26 @@ source("./code/functions-network-analysis.R")
 ## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
-gc <- induced.subgraph(g, V(g)[ CL0 == 1])
+g <- induced.subgraph(g, V(g)[ CL0 == 1])
 
 if (debug){
-    gc <- induced.subgraph(gc, which(V(gc)$core>3))
+    g <- induced.subgraph(g, which(V(g)$core>3))
     print("Debug mode")
     }
 # undirected graph to be used for algorithms that do not support directed
-gc <- as.undirected(gc,mode = "each")
+g <- as.undirected(g,mode = "each")
 
 print("consensus clustering...")
 ## CONSENSUS
 res=c(0.90,0.95,1.0,1.05,1.1) 
 n_trials = 500
-cl_louvian_N <- cluster_N_times(g=gc, 
+cl_louvian_N <- cluster_N_times(g=g, 
     res=res,
     n_trials=n_trials, 
     clustering_algorithm="Louvian")  
 
 as.data.frame(cl_louvian_N,
-    row.names = V(gc)$name ) %>% 
+    row.names = V(g)$name ) %>% 
     write_csv("./results/clusters_N.csv")
 
 # inspect and compare the clustering results
@@ -90,8 +90,8 @@ x<-x/N_trials#normalize
 #print(mean(x))
 #windows();heatmap(x)
 windows();hist(x[x>0.0])
-colnames(x)<-V(gc)$name
-rownames(x)<-V(gc)$name
+colnames(x)<-V(g)$name
+rownames(x)<-V(g)$name
 
 threshold = .5			    # threshold to decide on membership
 current.cluster = 0  	# counts only clusters with 3 or more members
@@ -130,54 +130,75 @@ while (more_clusers_to_be_found){
 print("Saving results")
 ccs %>% write_csv("./results/clusters_CONSENSUS.csv")
 #save cluster info in graph structure
+V(g)$clust_cons <- as.integer(0)
+for(i in 1:nrow(ccs)) {
+    mmbrsp <- as.numeric(ccs[[i,2]] )
+    nname <- as.character(ccs[[i,1]] )
+    V(g)[V(g)$name == nname]$clust_cons <- mmbrsp
+}
 
 print("Sorting clusters..")
 min_size <- 2
-conversion_table <- as.data.frame(table(ccs$mbshp))%>%
+conversion_table <- as.data.frame(table(V(g)$clust_cons))%>%
      rename(comm_size = Freq)%>%
-     rename(comm_number=Var1)%>%
+     rename(cccc=Var1)%>%
      arrange(-comm_size)%>%
      rownames_to_column("cluster_level_1")%>%
      mutate(cluster_level_1 = as.integer(cluster_level_1))%>%
-     mutate(cluster_level_1 = if_else(comm_size > min_size, cluster_level_1, as.integer(0) ))
+     mutate(cluster_level_1 = cluster_level_1 - 1)
+ 
+print(conversion_table%>%head(10))
+tt <- tibble(V(g)$name, V(g)$clust_cons) %>%
+  rename(cccc = "V(g)$clust_cons")%>%
+  rename(nnnn="V(g)$name")
 
-assigned_comps <- as.data.frame(ccs$mbshp)%>%
-     rename(comm_number = "ccs$mbshp")%>%
-     merge(conversion_table,by="comm_number")
+tt <- tt %>% merge(conversion_table, by="cccc")
 
-V(gc)$CL1<-assigned_comps$cluster_level_1
-
-
-#  for(i in 1:nrow(ccs)) {
-#      mmbrsp <- as.numeric(ccs[[i,2]] )
-#      nname <- as.character(ccs[[i,1]] )
-#      V(gc)[V(gc)$name == nname]$clust_cons <- mmbrsp
-#  }
-
+# assign new cluster numbers, sorted by decreasing size
+# TODO: write faster code for the following section
+for (i in 1:length(V(g))){
+  vname<-V(g)[i]$name
+  newclust <- tt %>% 
+    select(cccc,cluster_level_1,nnnn)%>%
+    filter(nnnn==vname)
+  #print(paste(vname, newclust$cccc, newclust$cluster_level_1))
+  V(g)[V(g)$name == vname]$CL1 <- newclust$cluster_level_1
+}
+  
+ 
+# create a "community" object
 # clusters_lvC <- make_clusters(
-#   gc,
-#   membership = V(gc)$CL1,
+#   g,
+#   membership = V(g)$mmbrsp,
 #   algorithm = "louvian consensus",
 #   merges = NULL,
 #   modularity = FALSE
 # )
 
-show_subgraphs (gc, 
-  clusters_membership = V(gc)$CL1, 
+show_subgraphs (g, 
+  clusters_membership = V(g)$clust_cons, 
   nrows=3,
   ncols=5,
   label="Consensus Louvian" ) 
 
-gc %>% write_graph("./results/communities_consensus.csv", format="graphml")
-as_long_data_frame(gc) %>% write_csv("./results/communities_consensus_as_df.csv")
+
+## NOT correctly assigned...
+show_subgraphs (g, 
+  clusters_membership = V(g)$CL1, 
+  nrows=3,
+  ncols=5,
+  label="CL1" ) 
+
+g %>% write_graph("./results/communities_consensus.csv", format="graphml")
+as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
 
 print("analysis...")
 print("heatmap by sorted nodes")
-sorted_nodes <- order(V(gc)$CL1)
+sorted_nodes <- order(V(g)$CL1)
 #windows();heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("heatmap by clusters")
-m <- mixmat(gc,"CL1", use.density=TRUE )
+m <- mixmat(g,"CL1", use.density=TRUE )
 mdf <- m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   as.data.frame() %>%
   rownames_to_column("from") %>%
