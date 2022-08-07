@@ -130,23 +130,40 @@ while (more_clusers_to_be_found){
 print("Saving results")
 ccs %>% write_csv("./results/clusters_CONSENSUS.csv")
 #save cluster info in graph structure
-V(gc)$clust_cons <- 0
-for(i in 1:nrow(ccs)) {
-    mmbrsp <- as.numeric(ccs[[i,2]] )
-    nname <- as.character(ccs[[i,1]] )
-    V(gc)[V(gc)$name == nname]$clust_cons <- mmbrsp
-}
 
-clusters_lvC <- make_clusters(
-  gc,
-  membership = V(gc)$clust_cons,
-  algorithm = "louvian consensus",
-  merges = NULL,
-  modularity = FALSE
-)
+print("Sorting clusters..")
+min_size <- 2
+conversion_table <- as.data.frame(table(ccs$mbshp))%>%
+     rename(comm_size = Freq)%>%
+     rename(comm_number=Var1)%>%
+     arrange(-comm_size)%>%
+     rownames_to_column("cluster_level_1")%>%
+     mutate(cluster_level_1 = as.integer(cluster_level_1))%>%
+     mutate(cluster_level_1 = if_else(comm_size > min_size, cluster_level_1, as.integer(0) ))
+
+assigned_comps <- as.data.frame(ccs$mbshp)%>%
+     rename(comm_number = "ccs$mbshp")%>%
+     merge(conversion_table,by="comm_number")
+
+V(gc)$CL1<-assigned_comps$cluster_level_1
+
+
+#  for(i in 1:nrow(ccs)) {
+#      mmbrsp <- as.numeric(ccs[[i,2]] )
+#      nname <- as.character(ccs[[i,1]] )
+#      V(gc)[V(gc)$name == nname]$clust_cons <- mmbrsp
+#  }
+
+# clusters_lvC <- make_clusters(
+#   gc,
+#   membership = V(gc)$CL1,
+#   algorithm = "louvian consensus",
+#   merges = NULL,
+#   modularity = FALSE
+# )
 
 show_subgraphs (gc, 
-  clusters_membership = clusters_lvC$membership, 
+  clusters_membership = V(gc)$CL1, 
   nrows=3,
   ncols=5,
   label="Consensus Louvian" ) 
@@ -156,11 +173,11 @@ as_long_data_frame(gc) %>% write_csv("./results/communities_consensus_as_df.csv"
 
 print("analysis...")
 print("heatmap by sorted nodes")
-sorted_nodes <- order(V(gc)$clust_cons)
+sorted_nodes <- order(V(gc)$CL1)
 #windows();heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("heatmap by clusters")
-m <- mixmat(gc,"clust_cons", use.density=TRUE )
+m <- mixmat(gc,"CL1", use.density=TRUE )
 mdf <- m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   as.data.frame() %>%
   rownames_to_column("from") %>%
