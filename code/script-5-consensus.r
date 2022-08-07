@@ -37,28 +37,28 @@ library(glue)
 source("./code/functions-network-analysis.R")
 
 ## load graph
-print("Loading giant component and making a graph...")
+print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 gc <- induced.subgraph(g, V(g)[ CL0 == 1])
-# undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(gc,mode = "collapse")# edge.attr.comb = "sum")
 
 if (debug){
-    gc <- induced.subgraph(gc,which(V(gc)$core>3))
+    gc <- induced.subgraph(gc, which(V(gc)$core>3))
     print("Debug mode")
     }
+# undirected graph to be used for algorithms that do not support directed
+gc <- as.undirected(gc,mode = "each")
 
 print("consensus clustering...")
 ## CONSENSUS
 res=c(0.90,0.95,1.0,1.05,1.1) 
 n_trials = 500
-cl_louvian_N <- cluster_N_times(g=gc_undirected, 
+cl_louvian_N <- cluster_N_times(g=gc, 
     res=res,
     n_trials=n_trials, 
     clustering_algorithm="Louvian")  
 
 as.data.frame(cl_louvian_N,
-    row.names = V(gc_undirected)$name ) %>% 
+    row.names = V(gc)$name ) %>% 
     write_csv("./results/clusters_N.csv")
 
 # inspect and compare the clustering results
@@ -135,7 +135,6 @@ for(i in 1:nrow(ccs)) {
     mmbrsp <- as.numeric(ccs[[i,2]] )
     nname <- as.character(ccs[[i,1]] )
     V(gc)[V(gc)$name == nname]$clust_cons <- mmbrsp
-    #print(paste(nname, mmbrsp))
 }
 
 clusters_lvC <- make_clusters(
@@ -146,7 +145,7 @@ clusters_lvC <- make_clusters(
   modularity = FALSE
 )
 
-show_subgraphs (gc_undirected, 
+show_subgraphs (gc, 
   clusters_membership = clusters_lvC$membership, 
   nrows=3,
   ncols=5,

@@ -25,18 +25,21 @@ library(glue)
 source("./code/functions-network-analysis.R")
 
 ## load graph
-print("Loading giant componente and making a graph...")
+## load graph
+print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 gc <- induced.subgraph(g, V(g)[ CL0 == 1])
+if (debug){
+    gc <- induced.subgraph(gc,which(V(gc)$core>3))
+    print("Debug mode")
+    }
+# undirected graph to be used for algorithms that do not support directed
+gc_undirected <- as.undirected(g,mode = "each")
+
 ## TODO at this stage we do community detection on giant componennt, 
 ## but this overlooks a relevant opportunity: communities are level-1 clusters
 ## and we should do hiearchical clustering
 
-if (debug){gc <- induced.subgraph(gc,which(V(gc)$core>10))}
-
-windows();plot(gc)
-# undirected graph to be used for algorithms that do not support directed
-gc_undirected <- as.undirected(gc, mode = "collapse")#, edge.attr.comb = "sum")
 
 
 ## community detection using Edge Betweenneess algorithm *************************************************************
@@ -69,7 +72,7 @@ print("Community detection using Eigenvector algorithm...")
 clusters_ev <- cluster_leading_eigen (gc_undirected, 
 	steps = -1,
 	weights = NA,
-	start = membership(clusters_eb),
+	#start = V(gc)$cl_eb,
 	options = arpack_defaults,
 	callback = NULL,
 	extra = NULL,
