@@ -103,7 +103,7 @@ more_clusers_to_be_found=TRUE
 N_trials   <- ncol(all_clusters)
 
 remaining_prob<-x
-min.points = 15
+min.points = 5
 
 print("identify clusters above min.points")
 ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
@@ -127,46 +127,31 @@ while (more_clusers_to_be_found){
   }
 }
 
+print("sorting cluster labels...")
+V(g)$CL1 <- 0
+cl_conv_table = as.data.frame(table(ccs$mbshp))%>%
+    rename(comm_size = Freq)%>%
+    rename(cccc=Var1)%>%
+    arrange(-comm_size)
+print(cl_conv_table)
+
+cl_new_labels <- 1
+for (i in cl_conv_table$cccc){
+  print(paste(i,cl_new_labels))
+  selected_vids <- ccs %>%
+    filter(mbshp == i) %>%
+    select(name)%>%
+    pull()%>%
+    unlist()
+  V(g)[ V(g)$name %in% selected_vids ]$CL1 <- cl_new_labels
+  cl_new_labels <- cl_new_labels + 1
+}
+
 print("Saving results")
-ccs %>% write_csv("./results/clusters_CONSENSUS.csv")
-#save cluster info in graph structure
-V(g)$clust_cons <- as.integer(0)
-for(i in 1:nrow(ccs)) {
-    mmbrsp <- as.numeric(ccs[[i,2]] )
-    nname <- as.character(ccs[[i,1]] )
-    V(g)[V(g)$name == nname]$clust_cons <- mmbrsp
-}
+tibble(name=V(g)$name,cluster=V(g)$CL1) %>% 
+  write_csv("./results/clusters_consensus.csv")
 
-print("Sorting clusters..")
-min_size <- 2
-conversion_table <- as.data.frame(table(V(g)$clust_cons))%>%
-     rename(comm_size = Freq)%>%
-     rename(cccc=Var1)%>%
-     arrange(-comm_size)%>%
-     rownames_to_column("cluster_level_1")%>%
-     mutate(cluster_level_1 = as.integer(cluster_level_1))%>%
-     mutate(cluster_level_1 = cluster_level_1 - 1)
- 
-print(conversion_table%>%head(10))
-tt <- tibble(V(g)$name, V(g)$clust_cons) %>%
-  rename(cccc = "V(g)$clust_cons")%>%
-  rename(nnnn="V(g)$name")
-
-tt <- tt %>% merge(conversion_table, by="cccc")
-
-# assign new cluster numbers, sorted by decreasing size
-# TODO: write faster code for the following section
-for (i in 1:length(V(g))){
-  vname<-V(g)[i]$name
-  newclust <- tt %>% 
-    select(cccc,cluster_level_1,nnnn)%>%
-    filter(nnnn==vname)
-  #print(paste(vname, newclust$cccc, newclust$cluster_level_1))
-  V(g)[V(g)$name == vname]$CL1 <- newclust$cluster_level_1
-}
-  
- 
-# create a "community" object
+# create a "community" object, standard igraph output
 # clusters_lvC <- make_clusters(
 #   g,
 #   membership = V(g)$mmbrsp,
@@ -175,14 +160,6 @@ for (i in 1:length(V(g))){
 #   modularity = FALSE
 # )
 
-show_subgraphs (g, 
-  clusters_membership = V(g)$clust_cons, 
-  nrows=3,
-  ncols=5,
-  label="Consensus Louvian" ) 
-
-
-## NOT correctly assigned...
 show_subgraphs (g, 
   clusters_membership = V(g)$CL1, 
   nrows=3,
@@ -194,8 +171,6 @@ as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
 
 print("analysis...")
 print("heatmap by sorted nodes")
-sorted_nodes <- order(V(g)$CL1)
-#windows();heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("heatmap by clusters")
 m <- mixmat(g,"CL1", use.density=TRUE )
@@ -203,7 +178,6 @@ mdf <- m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   as.data.frame() %>%
   rownames_to_column("from") %>%
   pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
-
 clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
 # TODO add vertices info in the daa frame
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
