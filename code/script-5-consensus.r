@@ -174,10 +174,19 @@ print("heatmap by sorted nodes")
 
 print("heatmap by clusters")
 m <- mixmat(g,"CL1", use.density=TRUE )
-mdf <- m %>% ### HEATMAP DA RIVEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+mdf <- m %>% ### HEATMAP improve labels sorting
   as.data.frame() %>%
   rownames_to_column("from") %>%
   pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
+
+#mdf %>% write_csv("mdf.csv")
+mdf %>%
+  ggplot(aes(x=from, y=to, fill=weight)) + 
+  geom_raster() + scale_fill_gradient(low = "white", high = "black")
+ggsave("./results/figures/heatmap_clusters.png")
+
+
+
 clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
 # TODO add vertices info in the daa frame
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
@@ -205,11 +214,6 @@ windows();plot(clusters_graph,
 clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml")
 as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")
 
-mdf %>% write_csv("mdf.csv")
-  
-mdf %>%
-  ggplot(aes(x=from, y=to, fill=weight)) + 
-  geom_raster() + scale_fill_gradient(low = "white", high = "black")
-ggsave("hmg.png")
+
 
 print("Script completed.")
