@@ -1,13 +1,22 @@
-## load libraries
-library(tidyverse)
-library(readxl)
-library(lubridate)  #dates
-library(kableExtra) #tables
-library(xtable)     #tables
+library(png)
+library(grid)
+img <- readPNG(system.file("img", "Rlogo.png", package="png"))
+g <- rasterGrob(img, interpolate=TRUE)
+
+qplot(1:10, 1:10, geom="blank") +
+  annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+  geom_point()
+  
+# ## load libraries
+# library(tidyverse)
+# library(readxl)
+# library(lubridate)  #dates
+# library(kableExtra) #tables
+# library(xtable)     #tables
  
-## load functions
-source("./code/parameters.R")
-source("./code/functions-labour-market-data.R")
+# ## load functions
+# source("./code/parameters.R")
+# source("./code/functions-labour-market-data.R")
  
 ####################################################################à
 # # update the preparation of Links with GROUP
