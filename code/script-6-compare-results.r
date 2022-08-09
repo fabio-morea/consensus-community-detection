@@ -26,6 +26,9 @@ library(tidyverse)
 library(readxl)
 library(ggpubr)
 library(gridExtra)
+library(png)
+library(grid)
+
 
 
 source("./code/functions-cluster-attributes.R")
@@ -62,13 +65,14 @@ reference <- get.professional.groups(g, cluster_name="reference")
 plot_list <- list()
 
 for (i in as.integer((clusters$name))){
-  print(i)
   gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
-  current <- get.professional.groups(gi, cluster_name="current")
-  print(current)
-  if (nrow(current)>0){
-      # filename <- paste0("community_",i,".pdf")
-      # print(filename)
+  cl_size <- length(V(gi)$name)
+
+  if (cl_size>0){
+
+      current <- get.professional.groups(gi, cluster_name="current")
+      print(paste("processing cluster",i, "  size", cl_size, " numer of professional groups = ",nrow(current)))
+
       data <- bind_rows(current,reference)
       data<-data%>%
         select(-Freq)%>%
@@ -77,28 +81,55 @@ for (i in as.integer((clusters$name))){
         mutate(variation = ( current/reference) )%>%
         arrange(variation)
 
-      p <- ggplot(data, aes(x=prof_groups,y=variation)) + 
+
+      row1 <- ggplot() +
+            annotate("text", x = 0, y = 10, label = paste("Community ", i) , 
+                      color="black", size=10 , angle=0, fontface="bold")+ 
+            annotate("text", x = 0, y = 8, label = paste("Size ", cl_size) , 
+                      color="black", size=8 , angle=0, fontface="italic")+ 
+            theme_void()
+
+      graph <- paste0("./tmp/commpnity",i,".png")
+      png(figname, 600, 600)
+      plot(gi, 
+        edge.color="gray",
+        edge.width=E(gi)$weight,
+        edge.arrow.size= E(gi)$weight,
+        vertex.color=factor(V(gi)$core),
+        vertex.label=NA,
+        vertex.size=V(gi)$core,
+        layout=layout_with_kk) 
+      dev.off()
+      graph <- rasterGrob(png::readPNG(figname) )
+      
+
+      p1 <- ggplot(data, aes(x=prof_groups,y=variation)) + 
             xlim(reference$prof_groups) +
             ylim(0,3)+
-            geom_hline(yintercept=1.0, color = "red") +
+            geom_hline(yintercept=1.0, color = "green") +
             geom_col() + 
             theme_light() + 
             ggtitle(paste("Community", i , " variation of professional groups"))
       
-      plot_list[[i]] <- p
+      row2 <- ggarrange(graph,p1, ncol = 2, labels = c("B", "C"))
+      
+      plot_list[[i]] <- ggarrange(row1, row2,  
+            nrow = 6 )
+ 
   }
 }
 
 #all plots in the same png file
-plot_grob <- arrangeGrob(grobs=plot_list)
-png("./results/figures/comm_variation_prof_group.png")
-grid.arrange(plot_grob)
-dev.off()
+# plot_grob <- arrangeGrob(grobs=plot_list)
+# png("./results/figures/comm_variation_prof_group.png")
+# grid.arrange(plot_grob)
+# dev.off()
+
 
 #all plots in a pdf, one for each page
 ggsave(filename = "./results/figures/comm_variation_prof_group.pdf", 
    plot = marrangeGrob(plot_list, nrow=1, ncol=1), 
-   width = 10, height = 10)
+   width = 19, height = 29)
 
 
 print("Script completed.")
@@ -106,3 +137,4 @@ print("Script completed.")
 
 
 
+## ref. https://ggplot2-book.org/annotations.html
