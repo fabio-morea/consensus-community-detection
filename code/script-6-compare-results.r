@@ -50,7 +50,7 @@ get.professional.groups <- function(g, cluster_name){
     as.data.frame(table(prof_groups )) %>%
     mutate(rel_freq = Freq/n) %>%
     mutate(cl_name = cluster_name)
-    print(summary)
+    if (echo){print(summary)}
   return(summary)
 }
 
@@ -60,11 +60,12 @@ clusters <-
     rename(size = Freq)
 
  
+orgs <- read_csv("./tmp/organisations.csv")
 
 reference <- get.professional.groups(g, cluster_name="reference")
 plot_list <- list()
 
-for (i in as.integer((clusters$name))){
+for (i in unname((clusters$name))){
   gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
   cl_size <- length(V(gi)$name)
 
@@ -93,8 +94,8 @@ for (i in as.integer((clusters$name))){
       png(figname, 600, 600)
       plot(gi, 
         edge.color="gray",
-        edge.width=E(gi)$weight,
-        edge.arrow.size= E(gi)$weight,
+        edge.width=E(gi)$weight*2,
+        edge.arrow.size= E(gi)$weight*4,
         vertex.color=factor(V(gi)$core),
         vertex.label=NA,
         vertex.size=V(gi)$core,
@@ -112,9 +113,22 @@ for (i in as.integer((clusters$name))){
             ggtitle(paste("Community", i , " variation of professional groups"))
       
       row2 <- ggarrange(graph,p1, ncol = 2, labels = c("B", "C"))
+
+      orgs_in_community <- orgs %>%
+        filter(CF %in% V(gi)$name) %>%
+        select(az_ragione_soc,sede_op_comune,sede_op_provincia,SLL_nome,sede_op_ateco)%>%
+        mutate(sector = substring(sede_op_ateco,1,2))
       
-      plot_list[[i]] <- ggarrange(row1, row2,  
-            nrow = 6 )
+      p3 <- ggplot(orgs_in_community)+geom_bar(aes(x=SLL_nome))+coord_flip ()
+      row3<- ggarrange(graph,p3)
+
+      p4 <- ggplot(orgs_in_community)+geom_bar(aes(x=sector))+coord_flip ()
+      row4<- ggarrange(graph,p4)
+      
+      plot_list[[i]] <- ggarrange(row1, row2,row3, row4,   nrow = 5 )
+
+
+      
  
   }
 }

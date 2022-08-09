@@ -35,6 +35,8 @@ windows();plot(g,
 print("Analysing components...")
 V(g)$comp<-components(g)$membership
 
+print(table(components(g)$membership))
+
 # giant component
 maxcomp<- which.max(table(components(g)$membership))
 
@@ -97,6 +99,9 @@ assigned_comps <- as.data.frame(components(g)$membership)%>%
      merge(conversion_table,by="comp_number")
 
 V(g)$CL0<-assigned_comps$cluster_level_0
+
+
+print(table(assigned_comps$cluster_level_0))
 
 # saving
 print("Saving results...")

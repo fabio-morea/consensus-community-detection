@@ -170,7 +170,6 @@ g %>% write_graph("./results/communities_consensus.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
 
 print("analysis...")
-print("heatmap by sorted nodes")
 
 print("heatmap by clusters")
 m <- mixmat(g,"CL1", use.density=TRUE )

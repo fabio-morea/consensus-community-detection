@@ -1,11 +1,4 @@
-library(png)
-library(grid)
-img <- readPNG(system.file("img", "Rlogo.png", package="png"))
-g <- rasterGrob(img, interpolate=TRUE)
 
-qplot(1:10, 1:10, geom="blank") +
-  annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-  geom_point()
   
 # ## load libraries
 # library(tidyverse)
@@ -20,21 +13,21 @@ qplot(1:10, 1:10, geom="blank") +
  
 ####################################################################à
 # # update the preparation of Links with GROUP
-transitions.table <- read_csv("./tmp/transitions.csv")
-qualif_groups <- read_excel("profess_groups.xlsx", sheet="prof_groups") %>%
-    rename(qualif = qualifica_codice )%>%
-    select(qualif,group)
-links <- transitions.table %>%
-    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
-    merge( qualif_groups, by="qualif")%>%
-    arrange(date_start2) %>%
-    mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
-    relocate(cf1,cf2,ww,group)
-links <- links %>%
-    filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
-    filter(yy<=2021)     # not a complete year
-print(links%>%head(10))
-links %>% write_csv("./tmp/links.csv")
+# transitions.table <- read_csv("./tmp/transitions.csv")
+# qualif_groups <- read_excel("profess_groups.xlsx", sheet="prof_groups") %>%
+#     rename(qualif = qualifica_codice )%>%
+#     select(qualif,group)
+# links <- transitions.table %>%
+#     select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
+#     merge( qualif_groups, by="qualif")%>%
+#     arrange(date_start2) %>%
+#     mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
+#     relocate(cf1,cf2,ww,group)
+# links <- links %>%
+#     filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
+#     filter(yy<=2021)     # not a complete year
+# print(links%>%head(10))
+# links %>% write_csv("./tmp/links.csv")
  
 
 ##### DONE ###############################################à
