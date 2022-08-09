@@ -89,7 +89,7 @@ for (i in as.integer((clusters$name))){
                       color="black", size=8 , angle=0, fontface="italic")+ 
             theme_void()
 
-      graph <- paste0("./tmp/commpnity",i,".png")
+      figname <- paste0("./tmp/commpnity",i,".png")
       png(figname, 600, 600)
       plot(gi, 
         edge.color="gray",

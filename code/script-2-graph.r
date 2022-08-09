@@ -113,9 +113,9 @@ print("Graph completed and saved.")
 
 
 
-print(summary_table)
-summary_table <- 
-  as.data.frame.matrix(with(df_professions,table(vert,prof)))
-summary_table %>% write.csv("tmp.csv", quote=FALSE)
+# print(summary_table)
+# summary_table <- 
+#   as.data.frame.matrix(with(df_professions,table(vert,prof)))
+# summary_table %>% write.csv("tmp.csv", quote=FALSE)
 
 print("Process completed, please check results folder.")
