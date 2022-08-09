@@ -19,8 +19,7 @@ echo <- TRUE
 ## load libraries
 library(tidyverse)
 library(lubridate)  #dates
-library(kableExtra) #tables
-library(xtable)     #tables
+library(readxl)
  
 ## load functions
 source("./code/parameters.R")
@@ -60,18 +59,18 @@ to_remove3<-c("2.6.3","2.6.4","2.6.5")
 # 2.3.1.5 - Farmacisti
 # 2.6.1.4 - Docenti universitari in scienze dell'antichità, filologico-letterarie e storico-artistiche
 # 2.6.1.5 - Docenti universitari in scienze storiche, filosofiche, pedagogiche e psicologiche
-# 2.6.1.6 - Docenti universitari in scienze economiche e statistiche
-# 2.6.2.4 - Ricercatori e tecnici laureati nelle scienze dell'antichità, filologico-letterarie e storico-artistiche
+ # 2.6.2.4 - Ricercatori e tecnici laureati nelle scienze dell'antichità, filologico-letterarie e storico-artistiche
 # 2.6.2.5 - Ricercatori e tecnici laureati nelle scienze storiche, filosofiche, pedagogiche e psicologiche
-# 2.6.2.6 - Ricercatori e tecnici laureati nelle scienze economiche e statistiche
-# 2.6.2.7 - Ricercatori e tecnici laureati nelle scienze giuridiche, politiche e sociali
-to_remove4<-c("2.3.1.3","2.3.1.4","2.3.1.5","2.6.1.4","2.6.1.5","2.6.1.6","2.6.2.4", "2.6.2.5" ,
-"2.6.2.6","2.6.2.7")
+ # 2.6.2.7 - Ricercatori e tecnici laureati nelle scienze giuridiche, politiche e sociali
+to_remove4<-c("2.3.1.3","2.3.1.4","2.3.1.5","2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
+ 
 
 # 2.1.1.1.2 - Astronomi ed astrofisici
 # 2.1.1.6.2 - Paleontologi
 # 2.1.1.6.4 - Meteorologi
 to_remove5<-c("2.1.1.1.2","2.1.1.6.2", "2.1.1.6.4" )
+to_remove5<-c()
+
 
 data <- data %>%  
         mutate(across(where(is.character), toupper))%>%
@@ -129,7 +128,7 @@ transitions.table %>% write_csv("./tmp/transitions.csv")
 #     unique()%>%
 #     arrange(date_start2) 
 
-qualif_groups <- read_excel("./tmp/profess_groups.xlsx", sheet="prof_groups") %>%
+qualif_groups <- read_excel("profess_groups.xlsx", sheet="prof_groups") %>%
     rename(qualif = qualifica_codice )%>%
     select(qualif,group)
 
@@ -145,6 +144,7 @@ links <- links %>%
     filter(yy<=2021)     # not a complete year
 
 links %>% write_csv("./tmp/links.csv")
+ 
 
 selected.organisations <- toupper(unique( c(links$cf1,links$cf2) ))
 orgs <- make.organisations.table(contracts,selected.organisations )

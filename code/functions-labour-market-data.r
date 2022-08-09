@@ -6,8 +6,8 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
     if (debug == TRUE) {print("Debug mode: only 2 files will be loaded")} #only for debug puropses
     if (echo == TRUE) {print(paste("Start loading data from ", path) ) }  #only for debug puropses
 
-    
     files = list.files(path=path, pattern="dati*", all.files=TRUE, full.names=TRUE)
+    print(files)
     nfiles = length(files)
 
     if (debug == TRUE) {nfiles <- 2 } #only for debug puropses
@@ -20,7 +20,7 @@ load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
         print(paste("Loading file ", files[i]))
         new <- files[i] %>% 
             read_delim(  delim = "|", show_col_types = FALSE) %>%
-            select(columns) %>%
+            select(all_of(columns)) %>%
             unique()
 
         data <- rbind(data,new) 
@@ -134,12 +134,12 @@ make.transitions.table <- function(contracts, echo= FALSE){
         nn=ncontracts-1
         if (ncontracts>1){
             for (i in 1:nn){
-                if (iii %in% debug.examples ){
-                    print(paste("******* Procesing employee ", iii ))
-                    print(paste("contract i", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
-                    print(paste("contract i+1", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
-                    print("---")
-                }
+                # if (iii %in% debug.examples ){
+                #     print(paste("******* Procesing employee ", iii ))
+                #     print(paste("contract i", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
+                #     print(paste("contract i+1", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
+                #     print("---")
+                # }
                 empl <- tmp$idempl[i+1]
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
@@ -168,10 +168,10 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     gap=gap,
                     ww=ww)
 
-                if (iii %in% debug.examples ){
-                    print(paste("Date End 1",d_end1))
-                    print(paste("Date Start 2",d_start2))
-                }
+                # if (iii %in% debug.examples ){
+                #     print(paste("Date End 1",d_end1))
+                #     print(paste("Date Start 2",d_start2))
+                # }
 
              } 
         }
