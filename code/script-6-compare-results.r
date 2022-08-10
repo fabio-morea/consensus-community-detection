@@ -79,14 +79,10 @@ for (i in clusters_to_process){
         select(CF,az_ragione_soc,SLL_nome,sede_op_ateco)%>%
         mutate(sector = substring(sede_op_ateco,1,2))%>%select(-sede_op_ateco)
 
-      print(additional_info%>%head(10)) 
-      orgs_in_community <- tibble(CF = V(gi)$name, core = V(gi)$core, str=V(gi)$str)%>%
-        merge(additional_info,by="CF")%>%
-        unique()%>%
-        arrange(core)
+      orgs_in_community <- tibble(CF = V(g)$name, core = V(g)$core, str=V(g)$str)%>%
+        filter(CF %in% V(gi)$name)%>%
+        merge(additional_info,by="CF")
       
-      print(orgs_in_community%>%head(10))
-
       row1 <- ggplot() +  theme_void() +
             annotate("text", x = 0, y = 10, label = "")+ 
             annotate("text", x = 0, y = 4, label = paste("Community ", i) , 
@@ -109,10 +105,6 @@ for (i in clusters_to_process){
       dev.off()
       graph <- rasterGrob(png::readPNG(figname) )
 
-      legend2 <- ggplot() +  theme_void() +
-            annotate("text", x = 0, y = 4, label = "legend 1" , 
-                      color="black", size=10 , angle=0, fontface="bold")
-
       p2 <- scatter_strength_core(g,gi)
 
             
@@ -128,10 +120,18 @@ for (i in clusters_to_process){
         mutate(variation = ( current_pg/reference_pg) )%>%
         arrange(variation)
 
+      top10names <- orgs_in_community%>%
+        select(CF,az_ragione_soc, core, str)%>%
+        arrange(-core) %>%
+        filter(core > 2) %>%   
+        distinct(CF,.keep_all = TRUE) %>%  
+        head(20)
+
+      print(top10names)
+
+      
       legend3 <- ggplot() +  theme_void() +
-      annotate("text", x = 0, y = 4, 
-                label = paste("Community", i , " variation of professional groups") , 
-                color="black", size=10 , angle=0, fontface="bold")
+            annotation_custom(tableGrob(top10names))
 
       p3 <- ggplot(data ) + theme_light() + 
             geom_col(aes(x=prof_groups,y=variation)) + 
