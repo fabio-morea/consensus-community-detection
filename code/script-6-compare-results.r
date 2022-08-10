@@ -38,7 +38,7 @@ print("Loading graph...")
 g <- read_graph("./results/communities_consensus.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ CL0 == 1])
 if (debug){
-    g <- induced.subgraph(gc,which(V(gc)$core>3))
+    g <- induced.subgraph(g,which(V(g)$core>3))
     print("Debug mode")
     }
 
@@ -62,34 +62,38 @@ clusters <-
  
 orgs <- read_csv("./tmp/organisations.csv")
 
-reference <- get.professional.groups(g, cluster_name="reference")
+reference_pg <- get.professional.groups(g, cluster_name="reference_pg")
 plot_list <- list()
+clusters_to_process <- unname((clusters$name))
+if (debug){clusters_to_process <- clusters_to_process[1:4]}
 
-for (i in unname((clusters$name))){
+for (i in clusters_to_process){
   gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
   cl_size <- length(V(gi)$name)
 
   if (cl_size>0){
 
-      current <- get.professional.groups(gi, cluster_name="current")
-      print(paste("processing cluster",i, "  size", cl_size, " numer of professional groups = ",nrow(current)))
+      current_pg <- get.professional.groups(gi, cluster_name="current_pg")
+      print(paste("processing cluster",i, "  size", cl_size, " numer of professional groups = ",nrow(current_pg)))
 
-      data <- bind_rows(current,reference)
+      data <- bind_rows(current_pg,reference_pg)
       data<-data%>%
         select(-Freq)%>%
         pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
-        mutate(current = if_else(is.na(current), 0, current))%>%
-        mutate(variation = ( current/reference) )%>%
+        mutate(current_pg = if_else(is.na(current_pg), 0, current_pg))%>%
+        mutate(variation = ( current_pg/reference_pg) )%>%
         arrange(variation)
 
 
-      row1 <- ggplot() +
-            annotate("text", x = 0, y = 10, label = paste("Community ", i) , 
+      row1 <- ggplot() +  theme_void() +
+            annotate("text", x = 0, y = 10, label = "")+ 
+            annotate("text", x = 0, y = 4, label = paste("Community ", i) , 
                       color="black", size=10 , angle=0, fontface="bold")+ 
-            annotate("text", x = 0, y = 8, label = paste("Size ", cl_size) , 
-                      color="black", size=8 , angle=0, fontface="italic")+ 
-            theme_void()
+            annotate("text", x = 0, y = 2, label = paste("Size ", cl_size) , 
+                      color="black", size=8 , angle=0, fontface="italic")
+           
 
+# row 2 network ---------------------------------------------------------
       figname <- paste0("./tmp/commpnity",i,".png")
       png(figname, 600, 600)
       plot(gi, 
@@ -103,29 +107,61 @@ for (i in unname((clusters$name))){
       dev.off()
       graph <- rasterGrob(png::readPNG(figname) )
       
+      legend2 <- ggplot() +  theme_void() +
+            annotate("text", x = 0, y = 4, label = "legend 1" , 
+                      color="black", size=10 , angle=0, fontface="bold")
+            
+      row2 <- ggarrange(legend2,graph, ncol = 2, labels = c(" ", "community"))
 
-      p1 <- ggplot(data, aes(x=prof_groups,y=variation)) + 
-            xlim(reference$prof_groups) +
-            ylim(0,3)+
+# row 3 professional groups --------------------------------------------------
+      legend3 <- ggplot() +  theme_void() +
+      annotate("text", x = 0, y = 4, 
+                label = paste("Community", i , " variation of professional groups") , 
+                color="black", size=10 , angle=0, fontface="bold")
+
+      p3 <- ggplot(data ) + theme_light() + 
+            geom_col(aes(x=prof_groups,y=variation)) + 
             geom_hline(yintercept=1.0, color = "green") +
-            geom_col() + 
-            theme_light() + 
-            ggtitle(paste("Community", i , " variation of professional groups"))
+            xlim(reference_pg$prof_groups) + ylim(0,3) 
       
-      row2 <- ggarrange(graph,p1, ncol = 2, labels = c("B", "C"))
+      row3<- ggarrange(legend3,p3)
+
+# row 4 locations --------------------------------------------------
+      legend4 <- ggplot() +  theme_void() +
+      annotate("text", x = 0, y = 4, 
+                label = paste("Community", i , " locations") , 
+                color="black", size=10 , angle=0, fontface="bold")
 
       orgs_in_community <- orgs %>%
         filter(CF %in% V(gi)$name) %>%
         select(az_ragione_soc,sede_op_comune,sede_op_provincia,SLL_nome,sede_op_ateco)%>%
         mutate(sector = substring(sede_op_ateco,1,2))
       
-      p3 <- ggplot(orgs_in_community)+geom_bar(aes(x=SLL_nome))+coord_flip ()
-      row3<- ggarrange(graph,p3)
+      p4 <- ggplot(orgs_in_community)+
+      geom_bar(aes(x=SLL_nome))+
+      theme_light() 
 
-      p4 <- ggplot(orgs_in_community)+geom_bar(aes(x=sector))+coord_flip ()
-      row4<- ggarrange(graph,p4)
+      row4<- ggarrange(legend4,p4)
+
+# row 5 sectors --------------------------------------------------
+
+      legend5 <- ggplot() +  theme_void() +
+      annotate("text", x = 0, y = 4, 
+                label = paste("Community", i , " sectors") , 
+                color="black", size=10 , angle=0, fontface="bold")
+
+      orgs_in_community <- orgs %>%
+        filter(CF %in% V(gi)$name) %>%
+        select(az_ragione_soc,sede_op_comune,sede_op_provincia,SLL_nome,sede_op_ateco)%>%
+        mutate(sector = substring(sede_op_ateco,1,2))
       
-      plot_list[[i]] <- ggarrange(row1, row2,row3, row4,   nrow = 5 )
+      p5 <- ggplot(orgs_in_community)+
+      geom_bar(aes(x=sector))  + 
+      theme_light() 
+      row5<- ggarrange(legend5,p5)
+
+# page --------------------------------------------------
+      plot_list[[i]] <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
 
 
       
