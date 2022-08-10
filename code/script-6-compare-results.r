@@ -72,18 +72,20 @@ for (i in clusters_to_process){
   cl_size <- length(V(gi)$name)
 
   if (cl_size>0){
+      print(paste("processing cluster",i, "  size", cl_size))
+      
+      additional_info <- orgs %>%
+        filter(CF %in% V(gi)$name) %>%
+        select(CF,az_ragione_soc,SLL_nome,sede_op_ateco)%>%
+        mutate(sector = substring(sede_op_ateco,1,2))%>%select(-sede_op_ateco)
 
-      current_pg <- get.professional.groups(gi, cluster_name="current_pg")
-      print(paste("processing cluster",i, "  size", cl_size, " numer of professional groups = ",nrow(current_pg)))
-
-      data <- bind_rows(current_pg,reference_pg)
-      data<-data%>%
-        select(-Freq)%>%
-        pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
-        mutate(current_pg = if_else(is.na(current_pg), 0, current_pg))%>%
-        mutate(variation = ( current_pg/reference_pg) )%>%
-        arrange(variation)
-
+      print(additional_info%>%head(10)) 
+      orgs_in_community <- tibble(CF = V(gi)$name, core = V(gi)$core, str=V(gi)$str)%>%
+        merge(additional_info,by="CF")%>%
+        unique()%>%
+        arrange(core)
+      
+      print(orgs_in_community%>%head(10))
 
       row1 <- ggplot() +  theme_void() +
             annotate("text", x = 0, y = 10, label = "")+ 
@@ -106,14 +108,26 @@ for (i in clusters_to_process){
         layout=layout_with_kk) 
       dev.off()
       graph <- rasterGrob(png::readPNG(figname) )
-      
+
       legend2 <- ggplot() +  theme_void() +
             annotate("text", x = 0, y = 4, label = "legend 1" , 
                       color="black", size=10 , angle=0, fontface="bold")
-            
-      row2 <- ggarrange(legend2,graph, ncol = 2, labels = c(" ", "community"))
 
-# row 3 professional groups --------------------------------------------------
+      p2 <- scatter_strength_core(g,gi)
+
+            
+      row2 <- ggarrange(p2,graph, ncol = 2, labels = c(" ", "community"))
+
+# row 3 professional groups ------------------------------------------------
+      current_pg <- get.professional.groups(gi, cluster_name="current_pg")
+      data <- bind_rows(current_pg,reference_pg)
+      data<-data%>%
+        select(-Freq)%>%
+        pivot_wider(names_from=cl_name , values_from = rel_freq) %>%
+        mutate(current_pg = if_else(is.na(current_pg), 0, current_pg))%>%
+        mutate(variation = ( current_pg/reference_pg) )%>%
+        arrange(variation)
+
       legend3 <- ggplot() +  theme_void() +
       annotate("text", x = 0, y = 4, 
                 label = paste("Community", i , " variation of professional groups") , 
@@ -132,11 +146,6 @@ for (i in clusters_to_process){
                 label = paste("Community", i , " locations") , 
                 color="black", size=10 , angle=0, fontface="bold")
 
-      orgs_in_community <- orgs %>%
-        filter(CF %in% V(gi)$name) %>%
-        select(az_ragione_soc,sede_op_comune,sede_op_provincia,SLL_nome,sede_op_ateco)%>%
-        mutate(sector = substring(sede_op_ateco,1,2))
-      
       p4 <- ggplot(orgs_in_community)+
       geom_bar(aes(x=SLL_nome))+
       theme_light() 
@@ -148,13 +157,7 @@ for (i in clusters_to_process){
       legend5 <- ggplot() +  theme_void() +
       annotate("text", x = 0, y = 4, 
                 label = paste("Community", i , " sectors") , 
-                color="black", size=10 , angle=0, fontface="bold")
-
-      orgs_in_community <- orgs %>%
-        filter(CF %in% V(gi)$name) %>%
-        select(az_ragione_soc,sede_op_comune,sede_op_provincia,SLL_nome,sede_op_ateco)%>%
-        mutate(sector = substring(sede_op_ateco,1,2))
-      
+                color="black", size=10 , angle=0, fontface="bold")      
       p5 <- ggplot(orgs_in_community)+
       geom_bar(aes(x=sector))  + 
       theme_light() 
