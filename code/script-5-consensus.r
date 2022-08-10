@@ -84,7 +84,7 @@ for (i in (1:N_trials)){
 }
 
  
-as.data.frame(x)%>%write_csv("./results/x.csv")
+#as.data.frame(x)%>%write_csv("./results/x.csv")
 
 x<-x/N_trials#normalize
 #print(mean(x))

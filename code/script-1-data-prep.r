@@ -45,22 +45,29 @@ data <- load_data(path, columns, echo, debug)
 # 2.3 - Specialisti nelle scienze della vita
 # 2.4 - Specialisti della salute
 # 2.6 - Specialisti della formazione e della ricerca - docenti e ricercatori universitari
+# 2.5.1	Specialisti delle scienze gestionali, commerciali e bancarie
+# 2.5.2	Specialisti in scienze giuridiche
 
-to_keep = c("2.1","2.2","2.3","2.4","2.6") 
+to_keep = c("1.2","1.3","2.1","2.2","2.3","2.4","2.6") 
 
 #exceptions:
 # 2.5 - Specialisti in scienze umane, sociali, artistiche e gestionali
 # 2.6.3 - Professori di scuola secondaria, post-secondaria e professioni assimilate
 # 2.6.4 - Professori di scuola primaria, pre–primaria e professioni assimilate
 # 2.6.5 - Altri specialisti dell'educazione e della formazione
-to_remove3<-c("2.6.3","2.6.4","2.6.5")
+# 2.4.1 - medici
+to_remove3<-c("2.4.1","2.6.3","2.6.4","2.6.5")
 
+# 2.5.1.1 PA
+# 2.3.1.4 2.3.1.5 veterinari e farmacisti
+# 2.6.1.2 2.6.2.2 - docenti e ricercatori universitari medicina
 # 2.6.1.4 - Docenti universitari in scienze dell'antichità, filologico-letterarie e storico-artistiche
 # 2.6.1.5 - Docenti universitari in scienze storiche, filosofiche, pedagogiche e psicologiche
 # 2.6.2.4 - Ricercatori e tecnici laureati nelle scienze dell'antichità, filologico-letterarie e storico-artistiche
 # 2.6.2.5 - Ricercatori e tecnici laureati nelle scienze storiche, filosofiche, pedagogiche e psicologiche
 # 2.6.2.7 - Ricercatori e tecnici laureati nelle scienze giuridiche, politiche e sociali
-to_remove4<-c("2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
+to_remove4<-c("2.5.1.1",
+"2.3.1.4","2.3.1.5","2.6.1.2","2.6.2.2","2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
 
 
 # 2.1.1.1.2 - Astronomi ed astrofisici
@@ -77,6 +84,19 @@ data <- data %>%
         mutate(q5=substring(qualifica_codice,1,9))%>%filter(!q5 %in% to_remove5)
 
 print(data%>%group_by(q2)%>%tally())
+
+list_profess <- data %>%
+  select(qualifica, qualifica_codice)%>%
+  mutate(q3=substring(qualifica_codice,1,5)) %>%
+  mutate(q5=substring(qualifica_codice,1,7)) %>%
+  unique() %>%
+  group_by(q3) %>%
+  arrange(q3,qualifica_codice) %>%
+  relocate(q3,q5,qualifica_codice)
+
+list_profess %>% write.csv("./tmp/professions.csv",quote=FALSE,row.names=FALSE)
+
+
 idct <-  make.ids.conversion.table(data, echo )
 idct %>%  
     write_csv("./tmp/ids_conversion_table.csv") # only for debug
@@ -87,8 +107,8 @@ employees<-data%>%
 
 employees <- employees %>% 
     group_by(idempl)%>%
-    mutate(date_in = min(data_inizio))%>%
-    mutate(date_out =max(data_fine))%>%
+    mutate(date_in  = min(data_inizio))%>%
+    mutate(date_out = max(data_fine))%>%
     select(idempl, data_nascita, genere, iso3, date_in, date_out) %>%
     rename(dob=data_nascita, sex=genere, country=iso3) %>%
     drop_na(idempl) %>%

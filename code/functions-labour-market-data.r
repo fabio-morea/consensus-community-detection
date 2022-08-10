@@ -55,6 +55,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
     nnnn = nrow(sorted.employees)
  
     for(i in 1:nnnn) {
+        print(paste("processing", i, " out of ", nnnn))
         idcit = sorted.employees$id_cittadino[i]
         dob = sorted.employees$data_nascita[i]
         nat = sorted.employees$iso3[i]
@@ -128,7 +129,14 @@ make.transitions.table <- function(contracts, echo= FALSE){
         ww=0)
 
     idcs <- unique(contracts$idempl)  
+    nnnn <- length(idcs)
+    counter <- 1
     for(iii in idcs){
+        if (echo){
+            print(paste("processing", round(counter/nnnn,3)*100, "%"))
+            counter <- counter + 1
+        }
+
         tmp = experience%>% filter(idempl==iii)
         ncontracts = nrow(tmp)
         nn=ncontracts-1

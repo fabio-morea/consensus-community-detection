@@ -1,11 +1,23 @@
 
   
 # ## load libraries
-# library(tidyverse)
-# library(readxl)
-# library(lubridate)  #dates
-# library(kableExtra) #tables
-# library(xtable)     #tables
+library(tidyverse)
+library(readxl)
+library(lubridate)  #dates
+library(kableExtra) #tables
+library(xtable)     #tables
+
+#check professions
+list_profess <- read_csv("./tmp/contracts.csv") %>%
+  select(qualifica, qualifica_codice)%>%
+  mutate(q3=substring(qualifica_codice,1,5)) %>%
+  mutate(q5=substring(qualifica_codice,1,7)) %>%
+  unique() %>%
+  group_by(q3) %>%
+  arrange(q3,qualifica_codice) %>%
+  relocate(q3,q5,qualifica_codice)
+
+list_profess %>% write.csv("./tmp/professions.csv",quote=FALSE,row.names=FALSE)
  
 # ## load functions
 # source("./code/parameters.R")
