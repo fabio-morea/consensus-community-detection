@@ -1,12 +1,14 @@
 # functions-cluster-attributes
 
-get.professional.groups <- function(g){
-  profess_in_this_graph <- E(g)$group
-  nn <- (length(profess_in_this_graph))
-  summary_prof_groups <- 
-    as.data.frame(table(profess_in_this_graph$group)) %>%
-    mutate(rel_freq = Freq/nn) 
-  return(summary_prof_groups)
+get.professional.groups <- function(g, cluster_name){
+  prof_groups <- E(g)$PG
+  n <- length(prof_groups)
+  summary <- 
+    as.data.frame(table(prof_groups )) %>%
+    mutate(rel_freq = Freq/n) %>%
+    mutate(cl_name = cluster_name)
+    if (echo){print(summary)}
+  return(summary)
 }
 
 scatter_strength_core <- function(g,gi){

@@ -27,7 +27,7 @@ shell("cls")
 
 ## debug mode
 debug <- FALSE
-echo <- FALSE
+echo <- TRUE
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -171,8 +171,10 @@ as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
 
 print("analysis...")
 
-print("heatmap by clusters")
+print("mixmat by clusters")
 m <- mixmat(g,"CL1", use.density=TRUE )
+
+print("heatmap by clusters")
 mdf <- m %>% ### HEATMAP improve labels sorting
   as.data.frame() %>%
   rownames_to_column("from") %>%
@@ -191,6 +193,8 @@ clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
 V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE) 
 
+ 
+
 edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
 edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#07d84d6d")
@@ -207,12 +211,15 @@ windows();plot(clusters_graph,
                 vertex.label.font=1,
                 vertex.label.color="black")
 
-#vertex.color=factor(V(clusters_graph)$strength),
-#vertex.size=V(clusters_graph)$strength
+top_clusters <-  V(clusters_graph)$name [1:10]
+ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
+windows();plot( ggg,
+                layout=layout.circle,
+                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*50,
+                vertex.color = "#04b0ff",
+                vertex.label.font=1,
+                vertex.label.color="black")
 
 clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml")
 as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")
-
-
-
 print("Script completed.")

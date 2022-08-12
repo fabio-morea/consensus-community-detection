@@ -43,16 +43,8 @@ if (debug){
     }
 
 
-get.professional.groups <- function(g, cluster_name){
-  prof_groups <- E(g)$group
-  n <- length(prof_groups)
-  summary <- 
-    as.data.frame(table(prof_groups )) %>%
-    mutate(rel_freq = Freq/n) %>%
-    mutate(cl_name = cluster_name)
-    if (echo){print(summary)}
-  return(summary)
-}
+
+
 
 clusters <- 
     as.data.frame(table(V(g)$CL1 )) %>%
@@ -62,6 +54,9 @@ clusters <-
  
 orgs <- read_csv("./tmp/organisations.csv")
 reference_pg <- get.professional.groups(g, cluster_name="reference_pg")
+
+
+
 plot_list <- list()
 clusters_to_process <- unname((clusters$name))
 if (debug){clusters_to_process <- clusters_to_process[1:4]}
@@ -70,7 +65,7 @@ for (i in clusters_to_process){
   gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
   cl_size <- length(V(gi)$name)
 
-  if (cl_size>0){
+  if (cl_size>2){
       print(paste("processing cluster",i, "  size", cl_size))
       
       additional_info <- orgs %>%
@@ -121,12 +116,12 @@ for (i in clusters_to_process){
 
       top10names <- orgs_in_community%>%
         select(CF,az_ragione_soc, core, str)%>%
-        arrange(-core) %>%
+        arrange(-str) %>%
         filter(core > 2) %>%   
         distinct(CF,.keep_all = TRUE) %>%  
         head(20)
 
-      print(top10names)
+      if(nrow(top10names)>1){print(top10names)}
 
       
       legend3 <- ggplot() +  theme_void() +
@@ -163,6 +158,7 @@ for (i in clusters_to_process){
       row5<- ggarrange(legend5,p5)
 
 # page --------------------------------------------------
+      print(paste("adding to plot list ", i ))
       plot_list[[i]] <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
 
 

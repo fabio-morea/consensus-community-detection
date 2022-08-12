@@ -111,7 +111,7 @@ make.transitions.table <- function(contracts, echo= FALSE){
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
 
     experience <- contracts %>%
-        select(idempl,qualifica_codice,CF,data_inizio,data_fine)%>%
+        select(idempl,qualifica_codice,CF,data_inizio,data_fine,sede_op_ateco,sede_op_comune)%>%
         mutate(dd= replace_na(data_fine, ymd(today())))%>%
         mutate(durat = time_length(dd - data_inizio, 'years'))%>%
         filter(durat>0)%>%
@@ -123,6 +123,8 @@ make.transitions.table <- function(contracts, echo= FALSE){
         cf1=".", 
         cf2=".", 
         qualif=".",
+        sede_op_ateco=".",
+        sede_op_comune=".",
         date_end1   = ymd("1900-01-01"),
         date_start2 = ymd("1900-01-01"),
         gap=0.0,
@@ -142,19 +144,18 @@ make.transitions.table <- function(contracts, echo= FALSE){
         nn=ncontracts-1
         if (ncontracts>1){
             for (i in 1:nn){
-                # if (iii %in% debug.examples ){
-                #     print(paste("******* Procesing employee ", iii ))
-                #     print(paste("contract i", i, " from ", tmp$data_inizio[i], " to ", tmp$data_fine[i]))
-                #     print(paste("contract i+1", i, " from ", tmp$data_inizio[i+1], " to " ,tmp$data_fine[i+1]))
-                #     print("---")
-                # }
+
                 empl <- tmp$idempl[i+1]
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
-                qualif = tmp$qualifica_codice[i+1]
+                qualif <- tmp$qualifica_codice[i+1]
+                ateco  <- tmp$sede_op_ateco[i+1]
+                comune <- tmp$sede_op_comune[i+1]
                 d_start2 <- ymd(tmp$data_inizio[i+1])
                 tempdate <- ymd(tmp$data_fine[i])
-                if (is.na(tempdate))   # nolint
+                #debug                 print(paste(i,qualif,ateco,comune))
+
+                if (is.na(tempdate))    
                     {d_end1 <- d_start2}
                 else 
                     {d_end1   <- tempdate}
@@ -164,22 +165,19 @@ make.transitions.table <- function(contracts, echo= FALSE){
                 if (gap < 0 ){
                     d_end1<-d_start2
                     gap<-0
-                    #print("Reset gap = 0")
-                }
+                 }
                 transitions <- transitions %>% add_row(
                     empl=empl,
                     cf1=cf1, 
                     cf2=cf2,
                     qualif=qualif,
+                    sede_op_ateco=ateco,
+                    sede_op_comune=comune,
                     date_end1   = d_end1,
                     date_start2 = d_start2,
                     gap=gap,
                     ww=ww)
 
-                # if (iii %in% debug.examples ){
-                #     print(paste("Date End 1",d_end1))
-                #     print(paste("Date Start 2",d_start2))
-                # }
 
              } 
         }
@@ -207,6 +205,8 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     cf1=tmp$cf1, 
                     cf2=tmp$cf2,
                     qualif=tmp$qualif,
+                    sede_op_ateco=ateco,
+                    sede_op_comune=comune,
                     ww=cumulate_weight, 
                     gap=tmp$gap,
                     loop=tmp$loop)

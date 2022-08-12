@@ -39,10 +39,10 @@ histogram.png <- function(data, filename){
 
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
-            select(cf1,cf2,ww,group,qualif) 
+            select(cf1,cf2,ww,PG,qualif) 
             
 # weight is limited between 0 and maxWeight
-maxWeight <- 3.0
+maxWeight <- 1.0
 links <- links %>% 
   mutate(weight = if_else(ww > maxWeight, maxWeight, ww))
 

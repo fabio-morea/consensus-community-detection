@@ -145,7 +145,7 @@ mixmat <- function(mygraph, attrib, use.density=TRUE) {
    
   for (i in 1:numatts) {
     for (j in 1:numatts) {
-      
+      if (echo) {print(paste(i,j))}
       tmp <- length(which(apply(el,1,function(x) {
           get.vertex.attribute(mygraph, attrib, x[1] ) == attlist[i] && 
           get.vertex.attribute(mygraph, attrib, x[2] ) == attlist[j]  } )))

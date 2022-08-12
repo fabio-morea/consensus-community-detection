@@ -72,7 +72,7 @@ print("Community detection using Eigenvector algorithm...")
 clusters_ev <- cluster_leading_eigen (g_undirected, 
 	steps = -1,
 	weights = NA,
-	#start = V(g)$cl_eb,
+	start = V(g)$cl_eb,
 	options = arpack_defaults,
 	callback = NULL,
 	extra = NULL,
