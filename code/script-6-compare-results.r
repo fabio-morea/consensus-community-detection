@@ -61,7 +61,6 @@ clusters <-
 
  
 orgs <- read_csv("./tmp/organisations.csv")
-
 reference_pg <- get.professional.groups(g, cluster_name="reference_pg")
 plot_list <- list()
 clusters_to_process <- unname((clusters$name))

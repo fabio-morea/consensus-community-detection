@@ -9,12 +9,8 @@ get.professional.groups <- function(g){
   return(summary_prof_groups)
 }
 
-
-
 scatter_strength_core <- function(g,gi){
-    
     library(infotheo)
-
     data <- tibble(
             core =  as.integer(V(g)$core), 
             stre = as.integer(V(g)$str), 

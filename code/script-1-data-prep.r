@@ -137,16 +137,19 @@ contracts %>% write_csv("./tmp/contracts.csv")
 transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")
 
-qualif_groups <- read_excel("profess_groups.xlsx", sheet="prof_groups") %>%
+#transitions.table <-read_csv("./tmp/transitions.csv") for debug only
+
+# professional group is a property of the link, so we add it to links.csv as "PG"
+profess_groups <- read_excel("groups.xlsx", sheet="professions") %>%
     rename(qualif = qualifica_codice )%>%
-    select(qualif,group)
+    select(qualif,PG)
 
 links <- transitions.table %>%
     select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
-    merge( qualif_groups, by="qualif")%>%
+    merge( profess_groups, by="qualif")%>%
     arrange(date_start2) %>%
     mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
-    relocate(cf1,cf2,ww,group)
+    relocate(cf1,cf2,ww,PG)
 
 links <- links %>%
     filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
@@ -159,3 +162,4 @@ orgs <- make.organisations.table(contracts,selected.organisations )
 orgs %>% write_csv("./tmp/organisations.csv")
 
 print("Script completed.")
+
