@@ -145,7 +145,7 @@ profess_groups <- read_excel("groups.xlsx", sheet="professions") %>%
     select(qualif,PG)
 
 links <- transitions.table %>%
-    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif)%>% 
+    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif,sede_op_comune, sede_op_ateco)%>% 
     merge( profess_groups, by="qualif")%>%
     arrange(date_start2) %>%
     mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
