@@ -151,6 +151,22 @@ links <- transitions.table %>%
     mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
     relocate(cf1,cf2,ww,PG)
 
+
+
+
+
+
+# locations are defined by sede_op_comune, a property of the edge
+location_groups <- read_excel("groups.xlsx", sheet="locations") %>%
+     select(sede_op_comune,LOC)
+
+ 
+
+# nace_sector_groups <- read_excel("groups.xlsx", sheet="sectors") %>%
+#     select(sede_op_ateco,NACE)
+# nace_sectors <- V(g)$sede_op_ateco
+# n <- length(nace_sectors)
+
 links <- links %>%
     filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
     filter(yy<=2021)     # not a complete year
