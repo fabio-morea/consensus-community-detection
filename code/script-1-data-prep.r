@@ -85,6 +85,8 @@ data <- data %>%
 
 print(data%>%group_by(q2)%>%tally())
 
+
+
 list_profess <- data %>%
   select(qualifica, qualifica_codice)%>%
   mutate(q3=substring(qualifica_codice,1,5)) %>%
@@ -95,6 +97,7 @@ list_profess <- data %>%
   relocate(q3,q5,qualifica_codice)
 
 list_profess %>% write.csv("./tmp/professions.csv",quote=FALSE,row.names=FALSE)
+
 
 
 idct <-  make.ids.conversion.table(data, echo )
@@ -137,41 +140,45 @@ contracts %>% write_csv("./tmp/contracts.csv")
 transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")
 
-#transitions.table <-read_csv("./tmp/transitions.csv") for debug only
+transitions.table <-read_csv("./tmp/transitions.csv") #for debug only
+
+links <- transitions.table %>%
+    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif,sede_op_comune, sede_op_ateco)%>% 
+    arrange(date_start2) %>%
+    mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)
+
+print(links%>%head(10))
 
 # professional group is a property of the link, so we add it to links.csv as "PG"
 profess_groups <- read_excel("groups.xlsx", sheet="professions") %>%
     rename(qualif = qualifica_codice )%>%
     select(qualif,PG)
+links <- links %>% merge(profess_groups, by="qualif")
 
-links <- transitions.table %>%
-    select(empl, cf1, cf2, date_end1, date_start2, gap, ww, qualif,sede_op_comune, sede_op_ateco)%>% 
-    merge( profess_groups, by="qualif")%>%
-    arrange(date_start2) %>%
-    mutate(yy = year(date_start2))%>% select(-date_start2,-date_end1)%>%
-    relocate(cf1,cf2,ww,PG)
-
-
-
-
-
-
-# locations are defined by sede_op_comune, a property of the edge
+# location is a property of the link, so we add it to links.csv  
 location_groups <- read_excel("groups.xlsx", sheet="locations") %>%
      select(sede_op_comune,LOC)
+links <- links %>% merge(location_groups, by="sede_op_comune")
+print(location_groups)
 
- 
-
-# nace_sector_groups <- read_excel("groups.xlsx", sheet="sectors") %>%
-#     select(sede_op_ateco,NACE)
-# nace_sectors <- V(g)$sede_op_ateco
-# n <- length(nace_sectors)
+# nace sector is a property of the link, so we add it to links.csv  
+nace_sector_groups <- read_excel("groups.xlsx", sheet="sectors") %>%
+    select(sede_op_ateco,NACE)
+links <- links %>% merge(nace_sector_groups, by="sede_op_ateco")
 
 links <- links %>%
     filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
     filter(yy<=2021)     # not a complete year
 
-links %>% write_csv("./tmp/links.csv")
+links %>% 
+    relocate(cf1, cf2, ww, PG, LOC, NACE)%>%
+    distinct()%>%
+    write_csv("./tmp/links.csv")
+
+print(table(links$PG))
+print(table(links$NACE))
+print(table(links$LOC))
+
 
 selected.organisations <- toupper(unique( c(links$cf1,links$cf2) ))
 orgs <- make.organisations.table(contracts,selected.organisations )
