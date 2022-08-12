@@ -1,4 +1,5 @@
 # Author: Fabio Morea @ Area Science Park
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
 #               Original data is not included in the package as it contains persnoal information
@@ -7,10 +8,6 @@
 # SPDX-License-Identifier: CC-BY-4.0
 
 # GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-network 
-
-
-
-# main
 
 ## debug mode
 debug <- FALSE
@@ -69,7 +66,6 @@ to_remove3<-c("2.4.1","2.6.3","2.6.4","2.6.5")
 to_remove4<-c("2.5.1.1",
 "2.3.1.4","2.3.1.5","2.6.1.2","2.6.2.2","2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
 
-
 # 2.1.1.1.2 - Astronomi ed astrofisici
 # 2.1.1.6.2 - Paleontologi
 # 2.1.1.6.4 - Meteorologi
@@ -85,8 +81,6 @@ data <- data %>%
 
 print(data%>%group_by(q2)%>%tally())
 
-
-
 list_profess <- data %>%
   select(qualifica, qualifica_codice)%>%
   mutate(q3=substring(qualifica_codice,1,5)) %>%
@@ -98,11 +92,8 @@ list_profess <- data %>%
 
 list_profess %>% write.csv("./tmp/professions.csv",quote=FALSE,row.names=FALSE)
 
-
-
 idct <-  make.ids.conversion.table(data, echo )
-idct %>%  
-    write_csv("./tmp/ids_conversion_table.csv") # only for debug
+idct %>% write_csv("./tmp/ids_conversion_table.csv") # only for debug
 
 employees<-data%>%
     left_join(idct, by="id_cittadino")%>%
@@ -154,17 +145,20 @@ profess_groups <- read_excel("groups.xlsx", sheet="professions") %>%
     rename(qualif = qualifica_codice )%>%
     select(qualif,PG)
 links <- links %>% merge(profess_groups, by="qualif")
+print(table(links$PG))
 
 # location is a property of the link, so we add it to links.csv  
 location_groups <- read_excel("groups.xlsx", sheet="locations") %>%
      select(sede_op_comune,LOC)
 links <- links %>% merge(location_groups, by="sede_op_comune")
 print(location_groups)
+print(table(links$LOC))
 
 # nace sector is a property of the link, so we add it to links.csv  
 nace_sector_groups <- read_excel("groups.xlsx", sheet="sectors") %>%
-    select(sede_op_ateco,NACE)
+    select(sede_op_ateco,NACE,NACE_group)
 links <- links %>% merge(nace_sector_groups, by="sede_op_ateco")
+print(table(links$NACE_group))
 
 links <- links %>%
     filter(yy>=2014) %>% # transitions from 2013 registered in early 2014
@@ -174,11 +168,6 @@ links %>%
     relocate(cf1, cf2, ww, PG, LOC, NACE)%>%
     distinct()%>%
     write_csv("./tmp/links.csv")
-
-print(table(links$PG))
-print(table(links$NACE))
-print(table(links$LOC))
-
 
 selected.organisations <- toupper(unique( c(links$cf1,links$cf2) ))
 orgs <- make.organisations.table(contracts,selected.organisations )

@@ -142,10 +142,13 @@ mixmat <- function(mygraph, attrib, use.density=TRUE) {
   # calculate edge density for each matrix entry by pairing type
   # lends itself to parallel if available
   el <- get.edgelist(mygraph,names=FALSE)
-   
+  
+  total <- numatts*numatts
+  iii <-0
   for (i in 1:numatts) {
     for (j in 1:numatts) {
-      if (echo) {print(paste(i,j))}
+      iii<-iii+1
+      if (echo) {print(round(iii/total*100,3))}
       tmp <- length(which(apply(el,1,function(x) {
           get.vertex.attribute(mygraph, attrib, x[1] ) == attlist[i] && 
           get.vertex.attribute(mygraph, attrib, x[2] ) == attlist[j]  } )))

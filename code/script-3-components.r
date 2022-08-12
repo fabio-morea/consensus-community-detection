@@ -1,4 +1,6 @@
 # Author: Fabio Morea @ Area Science Park
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
+
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
 #               Original data is not included in the package as it contains persnoal information

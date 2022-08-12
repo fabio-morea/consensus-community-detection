@@ -149,11 +149,10 @@ make.transitions.table <- function(contracts, echo= FALSE){
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
                 qualif <- tmp$qualifica_codice[i+1]
-                ateco  <- tmp$sede_op_ateco[i+1]
-                comune <- tmp$sede_op_comune[i+1]
+                sede_op_ateco  <- tmp$sede_op_ateco[i+1]
+                sede_op_comune <- tmp$sede_op_comune[i+1]
                 d_start2 <- ymd(tmp$data_inizio[i+1])
                 tempdate <- ymd(tmp$data_fine[i])
-                #debug                 print(paste(i,qualif,ateco,comune))
 
                 if (is.na(tempdate))    
                     {d_end1 <- d_start2}
@@ -171,14 +170,13 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     cf1=cf1, 
                     cf2=cf2,
                     qualif=qualif,
-                    sede_op_ateco=ateco,
-                    sede_op_comune=comune,
+                    sede_op_ateco=sede_op_ateco,
+                    sede_op_comune=sede_op_comune,
                     date_end1   = d_end1,
                     date_start2 = d_start2,
                     gap=gap,
                     ww=ww)
-
-
+                
              } 
         }
     }
@@ -205,8 +203,8 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     cf1=tmp$cf1, 
                     cf2=tmp$cf2,
                     qualif=tmp$qualif,
-                    sede_op_ateco=ateco,
-                    sede_op_comune=comune,
+                    sede_op_ateco=sede_op_ateco,
+                    sede_op_comune=sede_op_comune,
                     ww=cumulate_weight, 
                     gap=tmp$gap,
                     loop=tmp$loop)

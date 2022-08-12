@@ -1,4 +1,6 @@
 # Author: Fabio Morea @ Area Science Park
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
+
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
 #               Original data is not included in the package as it contains personal information
@@ -41,31 +43,33 @@ print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ CL0 == 1])
 
+n_trials = 1000
 if (debug){
     g <- induced.subgraph(g, which(V(g)$core>3))
+    n_trials = 50
     print("Debug mode")
     }
+
 # undirected graph to be used for algorithms that do not support directed
-g <- as.undirected(g,mode = "each")
+gu <- as.undirected(g,mode = "each")
 
 print("consensus clustering...")
 ## CONSENSUS
-res=c(0.90,0.95,1.0,1.05,1.1) 
-n_trials = 500
-cl_louvian_N <- cluster_N_times(g=g, 
+res=c(0.90,0.95,1.0,1.05,1.1)
+
+
+all_clusters <- cluster_N_times(g=gu, 
     res=res,
     n_trials=n_trials, 
     clustering_algorithm="Louvian")  
 
-as.data.frame(cl_louvian_N,
-    row.names = V(g)$name ) %>% 
+as.data.frame(all_clusters,
+    row.names = V(gu)$name ) %>% 
     write_csv("./results/clusters_N.csv")
 
 # inspect and compare the clustering results
 # in this case compare all 200 trials and calculate the probability that each company is in the same cluster of any other company
 # Then select as a cluster only those who have a probability > threshold 50%
-
-all_clusters <- cl_louvian_N ##DEBUG
 
 ncompanies <- nrow(all_clusters)
 N_trials   <- ncol(all_clusters)
@@ -90,8 +94,8 @@ x<-x/N_trials#normalize
 #print(mean(x))
 #windows();heatmap(x)
 windows();hist(x[x>0.0])
-colnames(x)<-V(g)$name
-rownames(x)<-V(g)$name
+colnames(x)<-V(gu)$name
+rownames(x)<-V(gu)$name
 
 threshold = .5			    # threshold to decide on membership
 current.cluster = 0  	# counts only clusters with 3 or more members
@@ -126,7 +130,7 @@ while (more_clusers_to_be_found){
     more_clusers_to_be_found=FALSE
   }
 }
-
+# from here on we are back to directed graph g (not gu!)
 print("sorting cluster labels...")
 V(g)$CL1 <- 0
 cl_conv_table = as.data.frame(table(ccs$mbshp))%>%
@@ -180,7 +184,7 @@ mdf <- m %>% ### HEATMAP improve labels sorting
   rownames_to_column("from") %>%
   pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
 
-#mdf %>% write_csv("mdf.csv")
+mdf %>% write_csv("mdf.csv")
 mdf %>%
   ggplot(aes(x=from, y=to, fill=weight)) + 
   geom_raster() + scale_fill_gradient(low = "white", high = "black")

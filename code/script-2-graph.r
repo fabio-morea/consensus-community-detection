@@ -1,4 +1,6 @@
 # Author: Fabio Morea @ Area Science Park
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
+
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
 #               Original data is not included in the package
@@ -39,7 +41,7 @@ histogram.png <- function(data, filename){
 
 #load the links to build the network,
 links <- read_csv("./tmp/links.csv") %>% 
-            select(cf1,cf2,ww,PG,qualif) 
+            select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE, sede_op_ateco) 
             
 # weight is limited between 0 and maxWeight
 maxWeight <- 1.0

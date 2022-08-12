@@ -1,4 +1,6 @@
 # Author: Fabio Morea @ Area Science Park
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
+
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
 #               Original data is not included in the package as it contains personal information
@@ -137,9 +139,5 @@ theme_light()+theme(aspect.ratio=0.71)+
 facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
-
-#sorted_nodes <- order(V(g)$cl_ev)
-#print(sorted_nodes)
-#heatmap(x,Rowv = sorted_nodes, Colv = sorted_nodes)
 
 print("Script completed.")

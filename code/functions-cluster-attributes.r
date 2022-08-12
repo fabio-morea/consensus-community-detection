@@ -11,6 +11,28 @@ get.professional.groups <- function(g, cluster_name){
   return(summary)
 }
 
+get.locations <- function(g, cluster_name){
+  locs <- E(g)$sede_op_comune
+  n <- length(locs)
+  summary <- 
+    as.data.frame(table(sede_op_comune)) %>%
+    mutate(rel_freq = Freq/n) %>%
+    mutate(cl_name = cluster_name)
+    if (echo){print(summary)}
+  return(summary)
+}
+
+get.nace <- function(g, cluster_name){
+  sectors <- E(g)$sede_op_ateco
+  n <- length(sectors)
+  summary <- 
+    as.data.frame(table(sede_op_ateco)) %>%
+    mutate(rel_freq = Freq/n) %>%
+    mutate(cl_name = cluster_name)
+    if (echo){print(summary)}
+  return(summary)
+}
+
 scatter_strength_core <- function(g,gi){
     library(infotheo)
     data <- tibble(
