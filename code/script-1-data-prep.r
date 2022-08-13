@@ -165,7 +165,7 @@ links <- links %>%
     filter(yy<=2021)     # not a complete year
 
 links %>% 
-    relocate(cf1, cf2, ww, PG, LOC, NACE)%>%
+    relocate(cf1, cf2, ww, PG, LOC, NACE_group)%>%
     distinct()%>%
     write_csv("./tmp/links.csv")
 

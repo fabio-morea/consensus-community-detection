@@ -203,11 +203,11 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     cf1=tmp$cf1, 
                     cf2=tmp$cf2,
                     qualif=tmp$qualif,
-                    sede_op_ateco=sede_op_ateco,
-                    sede_op_comune=sede_op_comune,
-                    ww=cumulate_weight, 
+                    sede_op_ateco=tmp$sede_op_ateco,
+                    sede_op_comune=tmp$sede_op_comune,
                     gap=tmp$gap,
-                    loop=tmp$loop)
+                    loop=tmp$loop,
+                    ww=cumulate_weight)
     }
 
     empl_prec=tmp$empl

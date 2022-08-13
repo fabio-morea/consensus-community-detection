@@ -88,12 +88,10 @@ for (i in (1:N_trials)){
 }
 
  
-#as.data.frame(x)%>%write_csv("./results/x.csv")
-
-x<-x/N_trials#normalize
-#print(mean(x))
-#windows();heatmap(x)
+ 
+x<-x/N_trials #normalize
 windows();hist(x[x>0.0])
+
 colnames(x)<-V(gu)$name
 rownames(x)<-V(gu)$name
 

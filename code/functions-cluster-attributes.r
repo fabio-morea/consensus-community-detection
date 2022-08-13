@@ -12,21 +12,21 @@ get.professional.groups <- function(g, cluster_name){
 }
 
 get.locations <- function(g, cluster_name){
-  locs <- E(g)$sede_op_comune
+  locs <- E(g)$LOC
   n <- length(locs)
   summary <- 
-    as.data.frame(table(sede_op_comune)) %>%
+    as.data.frame(table(locs)) %>%
     mutate(rel_freq = Freq/n) %>%
     mutate(cl_name = cluster_name)
     if (echo){print(summary)}
   return(summary)
 }
 
-get.nace <- function(g, cluster_name){
-  sectors <- E(g)$sede_op_ateco
+get.sectors <- function(g, cluster_name){
+  sectors <- E(g)$NACE_group
   n <- length(sectors)
   summary <- 
-    as.data.frame(table(sede_op_ateco)) %>%
+    as.data.frame(table(sectors)) %>%
     mutate(rel_freq = Freq/n) %>%
     mutate(cl_name = cluster_name)
     if (echo){print(summary)}
