@@ -56,7 +56,7 @@ reference_pg  <- get.professional.groups(g, cluster_name="reference_pg")
 reference_loc <- get.locations(g, cluster_name="reference_loc")
 reference_sec <- get.sectors(g, cluster_name="reference_sec")
 
-min_cluster_size_to_plot <- 5
+min_cluster_size_to_plot <- 10
 clusters_to_process <- sort(unique(V(g)$CL1))
 if (debug){################# DEBUG ##############################################
       clusters_to_process <- clusters_to_process[1:3]
@@ -67,13 +67,11 @@ if (debug){################# DEBUG #############################################
 for (i in clusters_to_process){
       gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
       cl_size <- length(V(gi)$name)
-      names<-
-      print(paste("processing cluster",i, "  size", cl_size))
-      info_vids_gi  <- info_vids  %>% filter(V(g)$name %in% V(gi)$name)
-      #info_edges_gi <- info_edges %>% filter(E(g) %in% E(gi))
-      
-
       if (cl_size>min_cluster_size_to_plot){
+            print(paste("processing cluster",i, "  size", cl_size))
+            info_vids_gi  <- info_vids  %>% filter(V(g)$name %in% V(gi)$name)
+            #info_edges_gi <- info_edges %>% filter(E(g) %in% E(gi))
+            
       # row 1 title and network figure
 
             title_block <- ggplot() +  theme_void() +
@@ -177,7 +175,7 @@ for (i in clusters_to_process){
             row5<- ggarrange(table_sec,figure_sec)
 
       # page --------------------------------------------------
-            if echo print(paste("adding to plot list ", i ))
+            if (echo) print(paste("adding to plot list ", i ))
             plot_list[[i+1]] <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
   }
 }

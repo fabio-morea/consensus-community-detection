@@ -51,10 +51,10 @@ scatter_strength_core <- function(g,gi){
                         colour = as.factor(community),
                         alpha = as.factor(community), 
                         size = as.factor(community)))+
-                        scale_colour_manual(values=c("gray","red"))+
+                        scale_colour_manual(values=c("black","red"))+
                         scale_shape_manual(values=c(1,19))+
                         scale_size_manual(values=c(3,5))+
-                        scale_alpha_manual(values=c(.3,1.0))+
+                        scale_alpha_manual(values=c(.2,1.0))+
                         scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
                         theme(panel.grid.major = element_line(color = "gray"))+
                         labs(title = "Comparison of strength and coreness",
