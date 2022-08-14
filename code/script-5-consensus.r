@@ -45,7 +45,7 @@ g <- induced.subgraph(g, V(g)[ CL0 == 1])
 
 n_trials = 1000
 if (debug){
-    g <- induced.subgraph(g, which(V(g)$core>3))
+    #g <- induced.subgraph(g, which(V(g)$core>3))
     n_trials = 50
     print("Debug mode")
     }
@@ -55,7 +55,9 @@ gu <- as.undirected(g,mode = "each")
 
 print("consensus clustering...")
 ## CONSENSUS
-res=c(0.90,0.95,1.0,1.05,1.1)
+#res=c(0.90,0.95,1.0,1.05,1.1)
+#res=c(0.5, 0.75, 1.0, 2.0, 3.0, 4.0 )
+res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
 
 
 all_clusters <- cluster_N_times(g=gu, 
@@ -217,7 +219,8 @@ top_clusters <-  V(clusters_graph)$name [1:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,
                 layout=layout.circle,
-                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*50,
+                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*10,
+                vertex.size= strength(ggg)*100,
                 vertex.color = "#04b0ff",
                 vertex.label.font=1,
                 vertex.label.color="black")

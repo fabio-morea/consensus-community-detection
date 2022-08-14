@@ -92,7 +92,7 @@ print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
-clusters_lv <- cluster_louvain(g_undirected,  resolution = 1)
+clusters_lv <- cluster_louvain(g_undirected,  resolution = 2.0)
 
 # membership stored in igraph object
 V(g)$cl_lv <- membership(clusters_lv)
@@ -107,7 +107,7 @@ print("Louvian completed.")
 ## community detection using Leiden algorithm  *************************************************************
 print("Community detection using Leiden algorithm...")
 
-clusters_ld <- cluster_leiden(g_undirected,  resolution = 1)
+clusters_ld <- cluster_leiden(g_undirected,  resolution = 0.50)
 # membership stored in igraph object
 V(g)$cl_ld <- membership(clusters_ld)
 
@@ -130,7 +130,7 @@ cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
 cc <- rbind(cc, community.size(clusters_lv, mm="Louvian") )
 cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
-non.trivial.communities <- cc %>% filter(c_sizes > 3)
+non.trivial.communities <- cc %>% filter(c_sizes > 2)
 
 figure<- ggplot(non.trivial.communities)+
 geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
