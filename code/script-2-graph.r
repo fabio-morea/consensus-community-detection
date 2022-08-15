@@ -44,7 +44,7 @@ links <- read_csv("./tmp/links.csv") %>%
             select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE_group, sede_op_ateco) 
             
 # weight is limited between 0 and maxWeight
-maxWeight <- 1.0
+maxWeight <- 3.0
 links <- links %>% 
   mutate(weight = if_else(ww > maxWeight, maxWeight, ww))
 

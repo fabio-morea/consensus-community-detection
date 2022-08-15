@@ -225,6 +225,17 @@ windows();plot(clusters_graph,
                 vertex.label.font=1,
                 vertex.label.color="black")
 
+
+top_clusters <-  V(clusters_graph)$name [1:10]
+ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
+windows();plot( ggg,
+                layout=layout.graphopt,
+                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*10,
+                vertex.size= strength(ggg)*100,
+                vertex.color = "#04b0ff",
+                vertex.label.font=1,
+                vertex.label.color="black")
+
 top_clusters <-  V(clusters_graph)$name [1:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,

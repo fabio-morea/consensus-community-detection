@@ -37,16 +37,23 @@ source("./code/functions-cluster-attributes.R")
 
 ## load graph
 print("Loading graph...")
-g <- read_graph("./results/communities_consensus.csv", format="graphml")
+g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ CL0 == 1])
+clusters_consensus <- read_csv("./results/clusters_consensus.csv")
 if (debug){
     print("Debug mode")
     }
 
+add_clusters <- as.tibble(  V(g)$name) %>% 
+      rename(name = value) %>% 
+      left_join(clusters_consensus, by = "name")
+V(g)$CL1 <- add_clusters$cluster
+V(g)$CL1_p <- add_clusters$probability
+
 org_names <- read_csv("./tmp/organisations.csv")%>%
       select(CF,az_ragione_soc) %>%
       distinct(CF, .keep_all = TRUE)
-info_vids  <- tibble(CF = V(g)$name, core = V(g)$core, str=V(g)$str) %>%
+info_vids  <- tibble(CF = V(g)$name, core = V(g)$core, str=V(g)$str, p = V(g)$CL1_p) %>%
       inner_join(org_names, by="CF")
 info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC, 
                         sector = E(g)$sede_op_ateco, nace   = E(g)$NACE_group,
@@ -103,7 +110,7 @@ for (i in clusters_to_process){
             scatter_plot <- scatter_strength_core(g,gi)
 
             top_names <- info_vids_gi %>%
-                  select(CF,az_ragione_soc, core, str)%>%
+                  select(CF,az_ragione_soc, core, str, p)%>%
                   mutate(az_ragione_soc = substring(az_ragione_soc,1,40))%>%
                   arrange(-str) %>%
                   filter(core > 2) %>%   
