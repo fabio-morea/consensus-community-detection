@@ -84,6 +84,7 @@ cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
   all_clusters <- c()
   m_best<-99999
   for (i in 1:n_trials){
+    if (echo) print(paste("Trial", i))
     if (clustering_algorithm=="Louvian"){ 
         random_resolution = as.numeric(sample(res, 1))
         cluster_tmp <- cluster_louvain(g,  resolution = random_resolution)

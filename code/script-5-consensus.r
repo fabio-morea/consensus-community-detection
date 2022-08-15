@@ -45,20 +45,19 @@ g <- induced.subgraph(g, V(g)[ CL0 == 1])
 
 n_trials = 1000
 if (debug){
-    #g <- induced.subgraph(g, which(V(g)$core>3))
-    n_trials = 50
+    #g <- induced.subgraph(g, which(V(g)$core>10))
+    n_trials = 100
     print("Debug mode")
     }
 
 # undirected graph to be used for algorithms that do not support directed
 gu <- as.undirected(g,mode = "each")
 
-print("consensus clustering...")
+print(paste("repeat clustering ", n_trials, "times ..."))
 ## CONSENSUS
 #res=c(0.90,0.95,1.0,1.05,1.1)
 #res=c(0.5, 0.75, 1.0, 2.0, 3.0, 4.0 )
 res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
-
 
 all_clusters <- cluster_N_times(g=gu, 
     res=res,
@@ -70,13 +69,17 @@ as.data.frame(all_clusters,
     write_csv("./results/clusters_N.csv")
 
 # inspect and compare the clustering results
-# in this case compare all 200 trials and calculate the probability that each company is in the same cluster of any other company
+# in this case compare all N trials and calculate the probability that each company is in the same cluster of any other company
 # Then select as a cluster only those who have a probability > threshold 50%
 
 ncompanies <- nrow(all_clusters)
 N_trials   <- ncol(all_clusters)
 x <- matrix(0, nrow=ncompanies, ncol=ncompanies)
+colnames(x)<-V(gu)$name
+rownames(x)<-V(gu)$name
+
 for (i in (1:N_trials)){
+    if (echo) print(paste("comparing cluster assignation ", i))
   	nclusters <- max(all_clusters[,i])
     for (k in 1:nclusters) {
       samecluster <- (which(all_clusters[,i]==k))
@@ -89,25 +92,15 @@ for (i in (1:N_trials)){
     }
 }
 
- 
- 
 x<-x/N_trials #normalize
-windows();hist(x[x>0.0])
-
-colnames(x)<-V(gu)$name
-rownames(x)<-V(gu)$name
-
 threshold = .5			    # threshold to decide on membership
-current.cluster = 0  	# counts only clusters with 3 or more members
+current.cluster = 0   	
 
 consensus_clusters <- as_tibble_col(rownames(x))%>%
 	mutate(membership=0)
 more_clusers_to_be_found=TRUE
-
-N_trials   <- ncol(all_clusters)
-
 remaining_prob<-x
-min.points = 5
+min.points = 5 # counts only clusters with min.points or more members
 
 print("identify clusters above min.points")
 ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
@@ -116,7 +109,7 @@ while (more_clusers_to_be_found){
   cluster_ii_members <- which(remaining_prob[1,] > threshold)
   remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
 
-  if(length(cluster_ii_members)>=min.points) {
+  if(length(cluster_ii_members) >= min.points) {
     current.cluster <- current.cluster + 1
     for (nn in names(cluster_ii_members)){
       ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster)
@@ -151,9 +144,24 @@ for (i in cl_conv_table$cccc){
   cl_new_labels <- cl_new_labels + 1
 }
 
+print("Assign probability")
+cl_membership <- tibble(name=V(g)$name,cluster=V(g)$CL1, probability = 0)
+pp <- c()
+for (nnn in cl_membership$name){
+  assignations <- x[nnn,]               #select row
+  assignations <- assignations[which(names(assignations) != nnn)]  #remove diagonal element
+  pp <- append(pp, max(assignations))
+  print(max(assignations))
+}
+
+cl_membership$probability <- pp
+windows();hist(cl_membership$probability)
+table(cl_membership$probability)
+
 print("Saving results")
-tibble(name=V(g)$name,cluster=V(g)$CL1) %>% 
-  write_csv("./results/clusters_consensus.csv")
+cl_membership %>% write_csv("./results/clusters_consensus.csv")
+
+
 
 # create a "community" object, standard igraph output
 # clusters_lvC <- make_clusters(
@@ -163,6 +171,8 @@ tibble(name=V(g)$name,cluster=V(g)$CL1) %>%
 #   merges = NULL,
 #   modularity = FALSE
 # )
+
+####
 
 show_subgraphs (g, 
   clusters_membership = V(g)$CL1, 
