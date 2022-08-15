@@ -28,8 +28,10 @@
 shell("cls")
 
 ## debug mode
-debug <- FALSE
 echo <- TRUE
+debug <- FALSE
+if (debug){print("Debug mode")}
+
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -41,14 +43,10 @@ source("./code/functions-network-analysis.R")
 ## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
-g <- induced.subgraph(g, V(g)[ CL0 == 1])
+g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 
 n_trials = 1000
-if (debug){
- #g <- induced.subgraph(g, which(V(g)$core>10))
- n_trials <- 100
- print("Debug mode")
- }
+if (debug){n_trials <- 100}
 
 # undirected graph to be used for algorithms that do not support directed
 gu <- as.undirected(g,mode = "each")
@@ -56,7 +54,7 @@ gu <- as.undirected(g,mode = "each")
 print(paste("repeat clustering ", n_trials, "times ..."))
 ## CONSENSUS
 #res=c(0.90,0.95,1.0,1.05,1.1)
-#res=c(0.5, 0.75, 1.0, 2.0, 3.0, 4.0 )
+#res=c(0.5, 0.75, 1.0, 2.0, 3.0, 4.0 ) ### TO DO try the effect of this 
 res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
 
 all_clusters <- cluster_N_times(g=gu, 

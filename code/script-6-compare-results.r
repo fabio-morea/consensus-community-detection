@@ -17,8 +17,8 @@
 shell("cls")
 
 ## debug mode
-debug <- FALSE
 echo <- FALSE
+debug <- FALSE
 if (debug){print("Debug mode")}
 
 ## load libraries
@@ -94,8 +94,8 @@ for (i in clusters_to_process){
                   edge.arrow.size= E(gi)$weight,
                   vertex.color="red",
                   vertex.label=NA,
-                  vertex.size=V(gi)$core,
-                  layout=layout_with_kk) 
+                  vertex.size=V(gi)$weight,
+                  layout=layout.graphopt) 
             dev.off()
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
             
@@ -111,7 +111,7 @@ for (i in clusters_to_process){
                   arrange(-str) %>%
                   filter(core > 2) %>%   
                   distinct(CF,.keep_all = TRUE) %>%
-                  head(15)
+                  head(20)
             table_names <- ggplot() +  theme_void() +
                   annotation_custom(tableGrob(top_names))
                   
