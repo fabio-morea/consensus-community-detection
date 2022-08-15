@@ -44,11 +44,11 @@ maxcomp<- which.max(table(components(g)$membership))
 
 ##plot giant component in red
 print("Plotting full network in separate window...")
-plot_title = "Full network g"
+plot_title <- "Full network g"
 windows();plot(g,
              edge.color="gray",
              edge.arrow.size = 1,
-             vertex.color= if_else ( V(g)$comp == maxcomp,"red","blue" ),
+             vertex.color= if_else( V(g)$comp == maxcomp,"red","blue" ),
              vertex.label=NA,
              vertex.size=5, 
              layout=layout_with_mds)
@@ -58,14 +58,14 @@ title(main=plot_title,cex.main=1,col.main="black")
 print("Plotting giant component in separate window...")
 gg <- induced_subgraph(g, V(g)[ V(g)$comp == maxcomp ])
 
-plot_title = "Giant ccomponent "
+plot_title = "Giant component "
 windows();plot(gg,
              edge.color="gray",
              edge.arrow.size = 0.2,
              vertex.color= if_else ( V(gg)$comp == maxcomp,"red","blue" ),
              vertex.label=NA,
              vertex.size=2, 
-             layout=layout.fruchterman.reingold)
+             layout=layout.graphopt)
 title(main=plot_title,cex.main=1,col.main="black")
 
 print("Plotting other components in separate window...")
@@ -80,10 +80,7 @@ windows();plot(oc,
              layout=layout.fruchterman.reingold)
 title(main=plot_title,cex.main=1,col.main="black")
 
-# # saving
-# print("Saving giant component ...")
-# g %>% write_graph("./results/giant_component.csv", format="graphml")
-# as_long_data_frame(g) %>% write_csv("./results/giant_component_as_df.csv")
+
 
 
 # number components in decreasing order and select only those above min_size
@@ -94,7 +91,7 @@ conversion_table <- as.data.frame(table(components(g)$membership))%>%
      arrange(-comp_size)%>%
      rownames_to_column("cluster_level_0")%>%
      mutate(cluster_level_0 = as.integer(cluster_level_0))%>%
-     mutate(cluster_level_0 = if_else(comp_size > min_size, cluster_level_0, as.integer(0) ))
+     mutate(cluster_level_0 = if_else(comp_size > min_size, cluster_level_0, as.integer(0)))
 
 assigned_comps <- as.data.frame(components(g)$membership)%>%
      rename(comp_number = "components(g)$membership")%>%
@@ -108,7 +105,7 @@ print(table(assigned_comps$cluster_level_0))
 # saving
 print("Saving results...")
 g %>% write_graph("./results/graph.csv", format="graphml")
-as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
+as_long_data_frame(g)%>% write_csv("./results/graph_as_df.csv")
 
 print("Process completed, please check results folder.")
 

@@ -3,8 +3,8 @@
 
 # Package: Labour Market Network - version 1.0
 # Description: R program to extract information from labour market data.
-#               Original data is not included in the package as it contains personal information
-#               Test data is contains no personal information
+# Original data is not included in the package as it contains personal information
+# Test data is contains no personal information
 
 # SPDX-License-Identifier: CC-BY-4.0
 
@@ -45,10 +45,10 @@ g <- induced.subgraph(g, V(g)[ CL0 == 1])
 
 n_trials = 1000
 if (debug){
-    #g <- induced.subgraph(g, which(V(g)$core>10))
-    n_trials = 100
-    print("Debug mode")
-    }
+ #g <- induced.subgraph(g, which(V(g)$core>10))
+ n_trials <- 100
+ print("Debug mode")
+ }
 
 # undirected graph to be used for algorithms that do not support directed
 gu <- as.undirected(g,mode = "each")
@@ -60,98 +60,98 @@ print(paste("repeat clustering ", n_trials, "times ..."))
 res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)
 
 all_clusters <- cluster_N_times(g=gu, 
-    res=res,
-    n_trials=n_trials, 
-    clustering_algorithm="Louvian")  
+ res=res,
+ n_trials=n_trials, 
+ clustering_algorithm="Louvian") 
 
 as.data.frame(all_clusters,
-    row.names = V(gu)$name ) %>% 
-    write_csv("./results/clusters_N.csv")
+ row.names = V(gu)$name ) %>% 
+ write_csv("./results/clusters_N.csv")
 
 # inspect and compare the clustering results
 # in this case compare all N trials and calculate the probability that each company is in the same cluster of any other company
 # Then select as a cluster only those who have a probability > threshold 50%
 
 ncompanies <- nrow(all_clusters)
-N_trials   <- ncol(all_clusters)
+N_trials <- ncol(all_clusters)
 x <- matrix(0, nrow=ncompanies, ncol=ncompanies)
 colnames(x)<-V(gu)$name
 rownames(x)<-V(gu)$name
 
 for (i in (1:N_trials)){
-    if (echo) print(paste("comparing cluster assignation ", i))
-  	nclusters <- max(all_clusters[,i])
-    for (k in 1:nclusters) {
-      samecluster <- (which(all_clusters[,i]==k))
-      nc <- length(samecluster)
-      for (t in 1:nc){
-        for (j in 1:nc){ 
-          x[samecluster[j],samecluster[t]] <- x[samecluster[j],samecluster[t]] +1
-        }
-      }
-    }
+ if (echo) print(paste("comparing cluster assignation ", i))
+ 	nclusters <- max(all_clusters[,i])
+ for (k in 1:nclusters) {
+ samecluster <- (which(all_clusters[,i]==k))
+ nc <- length(samecluster)
+ for (t in 1:nc){
+ for (j in 1:nc){ 
+ x[samecluster[j],samecluster[t]] <- x[samecluster[j],samecluster[t]] +1
+ }
+ }
+ }
 }
 
 x<-x/N_trials #normalize
-threshold = .5			    # threshold to decide on membership
-current.cluster = 0   	
+threshold = .5			 # threshold to decide on membership
+current.cluster = 0 	
 
-consensus_clusters <- as_tibble_col(rownames(x))%>%
+consensus_clusters <- as_tibble_col(rownames(x)) %>%
 	mutate(membership=0)
 more_clusers_to_be_found=TRUE
 remaining_prob<-x
-min.points = 5 # counts only clusters with min.points or more members
+min.points <- 5 # counts only clusters with min.points or more members
 
 print("identify clusters above min.points")
-ccs <- tibble(name = "x",mbshp = -1)%>%head(0)
+ccs <- tibble(name = "x",mbshp = -1) %>%head(0)
 
 while (more_clusers_to_be_found){
-  cluster_ii_members <- which(remaining_prob[1,] > threshold)
-  remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
+	cluster_ii_members <- which(remaining_prob[1,] > threshold)
+	remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
 
-  if(length(cluster_ii_members) >= min.points) {
-    current.cluster <- current.cluster + 1
-    for (nn in names(cluster_ii_members)){
-      ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster)
-    }
-    if(echo){print(paste("Cluster ", current.cluster, " has ", length(cluster_ii_members), " members"))}
-  }
-  if ( nrow(remaining_prob)  > min.points)  {
-    more_clusers_to_be_found=TRUE
-  } 
-  else{
-    more_clusers_to_be_found=FALSE
-  }
+	if(length(cluster_ii_members) >= min.points) {
+	current.cluster <- current.cluster + 1
+	for (nn in names(cluster_ii_members)){
+		ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster)
+	}
+	if(echo){print(paste("Cluster ", current.cluster, " has ", length(cluster_ii_members), " members"))}
+	}
+	if ( nrow(remaining_prob) > min.points) {
+		more_clusers_to_be_found=TRUE
+	} 
+	else{
+		more_clusers_to_be_found=FALSE
+	}
 }
 # from here on we are back to directed graph g (not gu!)
 print("sorting cluster labels...")
 V(g)$CL1 <- 0
-cl_conv_table = as.data.frame(table(ccs$mbshp))%>%
-    rename(comm_size = Freq)%>%
-    rename(cccc=Var1)%>%
-    arrange(-comm_size)
+cl_conv_table = as.data.frame(table(ccs$mbshp)) %>%
+ rename(comm_size = Freq) %>%
+ rename(cccc=Var1) %>%
+ arrange(-comm_size)
 print(cl_conv_table)
 
 cl_new_labels <- 1
 for (i in cl_conv_table$cccc){
-  print(paste(i,cl_new_labels))
-  selected_vids <- ccs %>%
-    filter(mbshp == i) %>%
-    select(name)%>%
-    pull()%>%
-    unlist()
-  V(g)[ V(g)$name %in% selected_vids ]$CL1 <- cl_new_labels
-  cl_new_labels <- cl_new_labels + 1
+ print(paste(i,cl_new_labels))
+ selected_vids <- ccs %>%
+ filter(mbshp == i) %>%
+ select(name) %>%
+ pull() %>%
+ unlist()
+ V(g)[ V(g)$name %in% selected_vids ]$CL1 <- cl_new_labels
+ cl_new_labels <- cl_new_labels + 1
 }
 
 print("Assign probability")
 cl_membership <- tibble(name=V(g)$name,cluster=V(g)$CL1, probability = 0)
 pp <- c()
 for (nnn in cl_membership$name){
-  assignations <- x[nnn,]               #select row
-  assignations <- assignations[which(names(assignations) != nnn)]  #remove diagonal element
-  pp <- append(pp, max(assignations))
-  print(max(assignations))
+ assignations <- x[nnn,] #select row
+ assignations <- assignations[which(names(assignations) != nnn)] #remove diagonal element
+ pp <- append(pp, max(assignations))
+ print(max(assignations))
 }
 
 cl_membership$probability <- pp
@@ -165,20 +165,20 @@ cl_membership %>% write_csv("./results/clusters_consensus.csv")
 
 # create a "community" object, standard igraph output
 # clusters_lvC <- make_clusters(
-#   g,
-#   membership = V(g)$mmbrsp,
-#   algorithm = "louvian consensus",
-#   merges = NULL,
-#   modularity = FALSE
+# g,
+# membership = V(g)$mmbrsp,
+# algorithm = "louvian consensus",
+# merges = NULL,
+# modularity = FALSE
 # )
 
 ####
 
 show_subgraphs (g, 
-  clusters_membership = V(g)$CL1, 
-  nrows=3,
-  ncols=5,
-  label="CL1" ) 
+ clusters_membership = V(g)$CL1, 
+ nrows=3,
+ ncols=5,
+ label="CL1" ) 
 
 g %>% write_graph("./results/communities_consensus.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
@@ -190,14 +190,14 @@ m <- mixmat(g,"CL1", use.density=TRUE )
 
 print("heatmap by clusters")
 mdf <- m %>% ### HEATMAP improve labels sorting
-  as.data.frame() %>%
-  rownames_to_column("from") %>%
-  pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
+ as.data.frame() %>%
+ rownames_to_column("from") %>%
+ pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
 
 mdf %>% write_csv("mdf.csv")
 mdf %>%
-  ggplot(aes(x=from, y=to, fill=weight)) + 
-  geom_raster() + scale_fill_gradient(low = "white", high = "black")
+ ggplot(aes(x=from, y=to, fill=weight)) + 
+ geom_raster() + scale_fill_gradient(low = "white", high = "black")
 ggsave("./results/figures/heatmap_clusters.png")
 
 
@@ -212,39 +212,39 @@ V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE)
 edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
 edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#07d84d6d")
-edgec=ifelse(edgew > 1, edgec,"#ffffff00")# no colour for weak links  
+edgec=ifelse(edgew > 1, edgec,"#ffffff00")# no colour for weak links 
 print(edgew)
-vertexs<-V(clusters_graph)$strength  * 200 
+vertexs<-V(clusters_graph)$strength * 200 
 
 windows();plot(clusters_graph,
-                layout=layout.graphopt,
-                edge.color=edgec,
-                edge.width=edgew,
-                vertex.size=vertexs,
-                vertex.color = "#04b0ff",
-                vertex.label.font=1,
-                vertex.label.color="black")
+ layout=layout.graphopt,
+ edge.color=edgec,
+ edge.width=edgew,
+ vertex.size=vertexs,
+ vertex.color = "#04b0ff",
+ vertex.label.font=1,
+ vertex.label.color="black")
 
 
-top_clusters <-  V(clusters_graph)$name [1:10]
+top_clusters <- V(clusters_graph)$name [1:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,
-                layout=layout.graphopt,
-                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*10,
-                vertex.size= strength(ggg)*100,
-                vertex.color = "#04b0ff",
-                vertex.label.font=1,
-                vertex.label.color="black")
+ layout=layout.graphopt,
+ edge.width = E(ggg)$weight / max(E(ggg)$weight)*10,
+ vertex.size= strength(ggg)*100,
+ vertex.color = "#04b0ff",
+ vertex.label.font=1,
+ vertex.label.color="black")
 
-top_clusters <-  V(clusters_graph)$name [1:10]
+top_clusters <- V(clusters_graph)$name [1:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,
-                layout=layout.circle,
-                edge.width =  E(ggg)$weight / max(E(ggg)$weight)*10,
-                vertex.size= strength(ggg)*100,
-                vertex.color = "#04b0ff",
-                vertex.label.font=1,
-                vertex.label.color="black")
+ layout=layout.circle,
+ edge.width = E(ggg)$weight / max(E(ggg)$weight)*10,
+ vertex.size= strength(ggg)*100,
+ vertex.color = "#04b0ff",
+ vertex.label.font=1,
+ vertex.label.color="black")
 
 clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml")
 as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")

@@ -107,9 +107,7 @@ make.ids.conversion.table <- function(data, echo= FALSE){
 
 # mate a table of transitions #################################################
 make.transitions.table <- function(contracts, echo= FALSE){
-    #debug.examples <-c(1716,1549)
     if (echo == TRUE) {print("Start transition table ") }                   #only for debug puropses
-
     experience <- contracts %>%
         select(idempl,qualifica_codice,CF,data_inizio,data_fine,sede_op_ateco,sede_op_comune)%>%
         mutate(dd= replace_na(data_fine, ymd(today())))%>%
@@ -136,15 +134,12 @@ make.transitions.table <- function(contracts, echo= FALSE){
     for(iii in idcs){
         if (echo){
             print(paste("processing", round(counter/nnnn,3)*100, "%"))
-            counter <- counter + 1
-        }
-
+            counter <- counter + 1}
         tmp = experience%>% filter(idempl==iii)
         ncontracts = nrow(tmp)
         nn=ncontracts-1
         if (ncontracts>1){
             for (i in 1:nn){
-
                 empl <- tmp$idempl[i+1]
                 cf1  <- tmp$CF[i]
                 cf2  <- tmp$CF[i+1]
@@ -158,13 +153,19 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     {d_end1 <- d_start2}
                 else 
                     {d_end1   <- tempdate}
+
                 gap = round(time_length(d_start2 - d_end1, 'years'), 3)
-                ww = round(as.numeric(tmp$durat[i+1]),3) #weight is the duration in the second company
+
+                ######### weight is a relevant parameter 
+                ######### minimum of duration in company1 and company2
+                ww = min( as.numeric(tmp$durat[i]), as.numeric(tmp$durat[i+1]) )   
+                
                 if (is.na(gap)){gap = -1}
+
                 if (gap < 0 ){
-                    d_end1<-d_start2
-                    gap<-0
-                 }
+                    d_end1 <- d_start2
+                    gap<-0 }
+
                 transitions <- transitions %>% add_row(
                     empl=empl,
                     cf1=cf1, 
@@ -176,15 +177,14 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     date_start2 = d_start2,
                     gap=gap,
                     ww=ww)
-                
-             } 
+                    
+            } 
         }
     }
     transitions <- transitions %>% 
         arrange(d_start2,empl)%>%
         mutate(loop = if_else(cf1==cf2, "o", "-"))
-
-
+    
     #aggregate transition of same employee with same company
     clean_transitions = transitions%>%head(0)
     cumulate_weight=0
@@ -208,11 +208,11 @@ make.transitions.table <- function(contracts, echo= FALSE){
                     gap=tmp$gap,
                     loop=tmp$loop,
                     ww=cumulate_weight)
+        }
+        empl_prec=tmp$empl
     }
-
-    empl_prec=tmp$empl
-    }
-    if (echo == TRUE) {print("Done.Check output in tmp folder.") }          #only for debug puropses
+    clean_transitions <- distinct(clean_transitions)
+    if (echo == TRUE) {print("transition table ready.") }           
     return(clean_transitions)
 }
 
