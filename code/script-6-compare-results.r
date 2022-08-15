@@ -19,6 +19,7 @@ shell("cls")
 ## debug mode
 debug <- FALSE
 echo <- FALSE
+if (debug){print("Debug mode")}
 
 ## load libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -31,24 +32,19 @@ library(gridExtra)
 library(png)
 library(grid)
 
-
-
 source("./code/functions-cluster-attributes.R")
 
 ## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
-g <- induced.subgraph(g, V(g)[ CL0 == 1])
+g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 clusters_consensus <- read_csv("./results/clusters_consensus.csv")
-if (debug){
-    print("Debug mode")
-    }
-
 add_clusters <- as.tibble(  V(g)$name) %>% 
       rename(name = value) %>% 
       left_join(clusters_consensus, by = "name")
 V(g)$CL1 <- add_clusters$cluster
 V(g)$CL1_p <- add_clusters$probability
+ 
 
 org_names <- read_csv("./tmp/organisations.csv")%>%
       select(CF,az_ragione_soc) %>%
