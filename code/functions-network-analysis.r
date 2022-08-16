@@ -76,7 +76,7 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
 
 
 #####################################################################################
-cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
+cluster_N_times <- function(g, clustering_algorithm, n_trials, res = NA,start = NA ) {
   results<-tibble(
     m=0.0,
     nnclust=as.integer(0),
@@ -92,21 +92,30 @@ cluster_N_times <- function(g, res, n_trials, clustering_algorithm) {
     else if (clustering_algorithm=="Leiden"){
         cluster_tmp <- cluster_leiden(g,  resolution = res)    
     }
+    else if (clustering_algorithm=="Eigenvector"){
+        cluster_tmp <- cluster_leading_eigen (g, 
+            steps = -1,
+            weights = E(g_undirected)$ww,
+            start = start
+            )     
+    }
     else{
         cluster_tmp <- cluster_edge_betweenness(g)   
     }
     all_clusters<- cbind(all_clusters,cluster_tmp$membership)
-    m <- modularity (g,  cluster_tmp$membership)
-    if(m<m_best){
-        m_best<-m
-        i_best=i
-        best_clusters <- cluster_tmp 
-    }
 
-    nnclust <- max(best_clusters$membership)
+    #identify cluster with best modularity
+    # m <- modularity (g,  cluster_tmp$membership)
+    # if(m<m_best){
+    #     m_best<-m
+    #     i_best=i
+    #     best_clusters <- cluster_tmp 
+    # }
 
-    results <- results %>% 
-        add_row(m,nnclust,random_resolution )
+    # nnclust <- max(best_clusters$membership)
+
+    # results <- results %>% 
+    #     add_row(m,nnclust,random_resolution )
   }
   
   t=glue("Modularity - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
