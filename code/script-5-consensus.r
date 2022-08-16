@@ -29,7 +29,7 @@ shell("cls")
 
 ## debug mode
 echo <- TRUE
-debug <- TRUE
+debug <- FALSE
 if (debug){print("Debug mode")}
 
 
@@ -45,13 +45,13 @@ print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 
-n_trials = 500
-if (debug){n_trials <- 50}
+n_trials = 100
+if (debug){n_trials <- 20}
 
 # undirected graph to be used for algorithms that do not support directed
 gu <- as.undirected(g,mode = "each")
 
-print(paste("repeat clustering ", n_trials, "times ..."))
+if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 ## CONSENSUS
 # resolution is a relevant parameter to define the size of clusters
 # and to induce a variability in the consensus procedure
@@ -59,20 +59,21 @@ print(paste("repeat clustering ", n_trials, "times ..."))
 #res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)### TO DO try the effect of this 
 res=c(0.2, 0.5, 0,8, 1.0, 2.0, 3.0, 4.0 ) 
 
-
+ 
 clusters_Louvian <- cluster_N_times(g=gu, 
  res=res,
  n_trials=n_trials, 
+  alpha = 0.15,
  clustering_algorithm="Louvian") 
 
 clusters_Eigen <- cluster_N_times(g=gu, 
- clustering_algorithm="Eigenvector",
- n_trials=n_trials, 
- start = all_clusters[,1] ) 
+	clustering_algorithm="Eigenvector",
+	n_trials=1,
+	alpha = 0.1,
+	start = NULL) 
+
 
 all_clusters <- cbind(clusters_Louvian, clusters_Eigen)
-print(stophere)
-
 
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
@@ -89,17 +90,17 @@ colnames(x)<-V(gu)$name
 rownames(x)<-V(gu)$name
 
 for (i in (1:N_trials)){
- if (echo) print(paste("comparing cluster assignation ", i))
+ 	if (echo) print(paste("comparing cluster assignation ", i))
  	nclusters <- max(all_clusters[,i])
- for (k in 1:nclusters) {
- samecluster <- (which(all_clusters[,i]==k))
- nc <- length(samecluster)
- for (t in 1:nc){
- for (j in 1:nc){ 
- x[samecluster[j],samecluster[t]] <- x[samecluster[j],samecluster[t]] +1
- }
- }
- }
+	for (k in 1:nclusters) {
+		samecluster <- (which(all_clusters[,i]==k))
+		nc <- length(samecluster)
+		for (t in 1:nc){
+			for (j in 1:nc){ 
+			x[samecluster[j],samecluster[t]] <- x[samecluster[j],samecluster[t]] +1
+			}
+		}
+	}
 }
 
 x<-x/N_trials #normalize
@@ -137,31 +138,28 @@ while (more_clusers_to_be_found){
 print("sorting cluster labels...")
 V(g)$CL1 <- 0
 cl_conv_table = as.data.frame(table(ccs$mbshp)) %>%
- rename(comm_size = Freq) %>%
- rename(cccc=Var1) %>%
- arrange(-comm_size)
-print(cl_conv_table)
-
+	rename(comm_size = Freq) %>%
+	rename(cccc=Var1) %>%
+	arrange(-comm_size)
+ 
 cl_new_labels <- 1
 for (i in cl_conv_table$cccc){
- print(paste(i,cl_new_labels))
- selected_vids <- ccs %>%
- filter(mbshp == i) %>%
- select(name) %>%
- pull() %>%
- unlist()
- V(g)[ V(g)$name %in% selected_vids ]$CL1 <- cl_new_labels
- cl_new_labels <- cl_new_labels + 1
+	selected_vids <- ccs %>%
+	filter(mbshp == i) %>%
+	select(name) %>%
+	pull() %>%
+	unlist()
+	V(g)[ V(g)$name %in% selected_vids ]$CL1 <- cl_new_labels
+	cl_new_labels <- cl_new_labels + 1
 }
 
 print("Assign probability")
 cl_membership <- tibble(name=V(g)$name,cluster=V(g)$CL1, probability = 0)
 pp <- c()
 for (nnn in cl_membership$name){
- assignations <- x[nnn,] #select row
- assignations <- assignations[which(names(assignations) != nnn)] #remove diagonal element
- pp <- append(pp, max(assignations))
- print(max(assignations))
+	assignations <- x[nnn,] #select row
+	assignations <- assignations[which(names(assignations) != nnn)] #remove diagonal element
+	pp <- append(pp, max(assignations))
 }
 
 cl_membership$probability <- pp
@@ -223,7 +221,6 @@ edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
 edgec=ifelse(is.loop(clusters_graph), "#ffffff00","#07d84d6d")
 edgec=ifelse(edgew > 1, edgec,"#ffffff00")# no colour for weak links 
-print(edgew)
 vertexs<-V(clusters_graph)$strength * 200 
 
 windows();plot(clusters_graph,

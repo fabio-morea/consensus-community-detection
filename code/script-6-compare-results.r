@@ -18,7 +18,7 @@ shell("cls")
 
 ## debug mode
 echo <- FALSE
-debug <- FALSE
+debug <- T
 if (debug){print("Debug mode")}
 
 ## load libraries
@@ -59,11 +59,10 @@ reference_pg  <- get.professional.groups(g, cluster_name="reference_pg")
 reference_loc <- get.locations(g, cluster_name="reference_loc")
 reference_sec <- get.sectors(g, cluster_name="reference_sec")
 
-min_cluster_size_to_plot <- 10
+min_cluster_size_to_plot <- 20
 clusters_to_process <- sort(unique(V(g)$CL1))
 if (debug){################# DEBUG ##############################################
-      clusters_to_process <- clusters_to_process[1:3]
-      min_cluster_size_to_plot <- 50
+      clusters_to_process <- clusters_to_process[1:10]
 }  
  plot_list <- list()
 
@@ -120,6 +119,7 @@ for (i in clusters_to_process){
 
       # row 3 professional groups ------------------------------------------------
             current_pg <- get.professional.groups(gi, cluster_name="current_pg")
+            print(current_pg )
             data_pg <- bind_rows(current_pg,reference_pg)
             data_pg<-data_pg %>%
                   select(-Freq)%>%
@@ -186,8 +186,11 @@ for (i in clusters_to_process){
 
 
 #all plots in a pdf, one for each page
-ggsave(filename = "./results/figures/comm_variation_prof_group.pdf", 
+ggsave(filename = "./results/figures/comm_detection_results.pdf", 
    plot = marrangeGrob(plot_list, nrow=1, ncol=1), 
    width = 19, height = 29)
 
 print("Script completed.")
+
+
+

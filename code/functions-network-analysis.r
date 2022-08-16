@@ -76,33 +76,39 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
 
 
 #####################################################################################
-cluster_N_times <- function(g, clustering_algorithm, n_trials, res = NA,start = NA ) {
+cluster_N_times <- function(g, clustering_algorithm, n_trials, alpha = 0 , res = NA,start = NA ) {
+ 
   results<-tibble(
     m=0.0,
     nnclust=as.integer(0),
-    random_resolution=1.0)%>%head(0)
+    random_resolution=1.0)%>%
+    head(0)
+
   all_clusters <- c()
   m_best<-99999
   for (i in 1:n_trials){
-    if (echo) print(paste("Trial", i))
+    if (echo) {print(paste("Trial", i))}
+    
+    applied_weights <- E(g)$ww 
+    if (alpha > 0.0){
+      n_items <- length(applied_weights)
+      n_null <- as.integer(alpha * n_items)
+      applied_weights[sample(n_items,n_null)] <- 0
+
+    }
     if (clustering_algorithm=="Louvian"){ 
         random_resolution = as.numeric(sample(res, 1))
-        cluster_tmp <- cluster_louvain(g,  resolution = random_resolution)
-      }
-    else if (clustering_algorithm=="Leiden"){
-        cluster_tmp <- cluster_leiden(g,  resolution = res)    
+        cluster_tmp <- cluster_louvain(g, weights = applied_weights , resolution = random_resolution)
     }
     else if (clustering_algorithm=="Eigenvector"){
-        cluster_tmp <- cluster_leading_eigen (g, 
-            steps = -1,
-            weights = E(g)$ww,
-            start = start
-            )     
+        cluster_tmp <- cluster_leading_eigen (g, weights = applied_weights , start=start )   
     }
     else{
-        cluster_tmp <- cluster_edge_betweenness(g)   
+        print("not supported") #cluster_tmp <- cluster_edge_betweenness(g)   
     }
-    all_clusters<- cbind(all_clusters,cluster_tmp$membership)
+    
+
+    all_clusters <- cbind(all_clusters,cluster_tmp$membership)
 
     #identify cluster with best modularity
     m <- modularity (g,  cluster_tmp$membership)
@@ -114,12 +120,11 @@ cluster_N_times <- function(g, clustering_algorithm, n_trials, res = NA,start = 
 
     nnclust <- max(best_clusters$membership)
 
-    results <- results %>% 
-        add_row(m,nnclust) 
+    results <- results %>% add_row(m,nnclust) 
   }
   
   t=glue("Modularity - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
-  #hist(results$m, main=t)
+  windows();hist(results$m, main=t)
   
   t=glue("Number of clusters - number of trials:", n_trials, " Algorithm:", clustering_algorithm)
   #windows();hist(results$nnclust, main=t)
