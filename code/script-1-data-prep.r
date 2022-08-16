@@ -126,7 +126,7 @@ contracts <- contracts %>%
  select(idempl, CF, az_ragione_soc, data_inizio, data_fine, durat, professione, qualifica, qualifica_codice, rl_ateco, rl_ateco_macro, rl_ateco_settore, saldo, sede_op_ateco, sede_op_comune, sede_op_indirizzo, sede_op_provincia, SLL_nome, tipo_contratto)
 
 contracts %>% write_csv("./tmp/contracts.csv")
-contracts <- read_csv("./tmp/contracts.csv") #for debug only
+#contracts <- read_csv("./tmp/contracts.csv") #for debug only
 
 transitions.table <- make.transitions.table(contracts, echo)
 transitions.table %>% write_csv("./tmp/transitions.csv")

@@ -49,7 +49,7 @@ g_undirected <- as.undirected(g,mode = "each")
 print("Community detection using Edge Betweenneess algorithm...")
 
 clusters_eb <- cluster_edge_betweenness(g, 
-                         weights = NA,
+                         weights = E(g)$ww,
                          directed = TRUE,
                          edge.betweenness = TRUE,
                          merges = TRUE,
@@ -72,13 +72,9 @@ print("EB completed.")
 print("Community detection using Eigenvector algorithm...")
 
 clusters_ev <- cluster_leading_eigen (g_undirected, 
-	steps = -1,
-	weights = NA,
+	weights = E(g_undirected)$ww,
 	start = V(g)$cl_eb,
-	options = arpack_defaults,
-	callback = NULL,
-	extra = NULL,
-	env = parent.frame) 
+	options = arpack_defaults) 
 
 # membership stored in igraph object
 V(g)$cl_ev <- membership(clusters_ev)

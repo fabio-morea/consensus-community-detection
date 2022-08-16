@@ -95,7 +95,7 @@ cluster_N_times <- function(g, clustering_algorithm, n_trials, res = NA,start = 
     else if (clustering_algorithm=="Eigenvector"){
         cluster_tmp <- cluster_leading_eigen (g, 
             steps = -1,
-            weights = E(g_undirected)$ww,
+            weights = E(g)$ww,
             start = start
             )     
     }
@@ -105,17 +105,17 @@ cluster_N_times <- function(g, clustering_algorithm, n_trials, res = NA,start = 
     all_clusters<- cbind(all_clusters,cluster_tmp$membership)
 
     #identify cluster with best modularity
-    # m <- modularity (g,  cluster_tmp$membership)
-    # if(m<m_best){
-    #     m_best<-m
-    #     i_best=i
-    #     best_clusters <- cluster_tmp 
-    # }
+    m <- modularity (g,  cluster_tmp$membership)
+    if(m<m_best){
+        m_best<-m
+        i_best=i
+        best_clusters <- cluster_tmp 
+    }
 
-    # nnclust <- max(best_clusters$membership)
+    nnclust <- max(best_clusters$membership)
 
-    # results <- results %>% 
-    #     add_row(m,nnclust,random_resolution )
+    results <- results %>% 
+        add_row(m,nnclust) 
   }
   
   t=glue("Modularity - number of trials:", n_trials, " Algorithm:", clustering_algorithm)

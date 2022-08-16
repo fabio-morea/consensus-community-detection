@@ -94,7 +94,7 @@ for (i in clusters_to_process){
                   edge.arrow.size= E(gi)$weight,
                   vertex.color="red",
                   vertex.label=NA,
-                  vertex.size=V(gi)$weight,
+                  vertex.size=V(gi)$core,
                   layout=layout.graphopt) 
             dev.off()
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
@@ -109,7 +109,7 @@ for (i in clusters_to_process){
                   select(CF,az_ragione_soc, core, str, p)%>%
                   mutate(az_ragione_soc = substring(az_ragione_soc,1,40))%>%
                   arrange(-str) %>%
-                  filter(core > 2) %>%   
+                  filter(core > 1) %>%   
                   distinct(CF,.keep_all = TRUE) %>%
                   head(20)
             table_names <- ggplot() +  theme_void() +
