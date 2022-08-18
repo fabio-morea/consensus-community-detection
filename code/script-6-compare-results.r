@@ -18,7 +18,7 @@ shell("cls")
 
 ## debug mode
 echo <- FALSE
-debug <- T
+debug <- FALSE
 if (debug){print("Debug mode")}
 
 ## load libraries
