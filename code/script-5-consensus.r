@@ -29,7 +29,7 @@ shell("cls")
 
 ## debug mode
 echo <- TRUE
-debug <- T
+debug <- FALSE
 if (debug){print("Debug mode")}
 
 
@@ -56,7 +56,7 @@ if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 # resolution is a relevant parameter to define the size of clusters
 # alpha is used to induce a variability in the consensus procedure
 
-res=c( 1.2, 1.4, 1.6 ) 
+res=c( 1.0, 1.2, 1.4, 1.6, 1.8 ) 
 alpha = 0.05
 
 all_clusters <- cluster_N_times(g=gu, 
