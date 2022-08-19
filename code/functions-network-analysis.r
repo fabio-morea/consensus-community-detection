@@ -136,6 +136,10 @@ cluster_N_times <- function(g, clustering_algorithm, n_trials, alpha = 0 , res =
         arrange(desc(n)) 
 
   if (echo) {print(cluster_summary)}
+  
+  # print("Filtering results with modularity below median")
+  # print(results$m < mean(results$m ))
+  # clusters_mod_below_median <- all_clusters[ results$m < mean(results$m ) ]
 
   return(all_clusters)
 }
@@ -162,11 +166,17 @@ mixmat <- function(mygraph, attrib, use.density=TRUE) {
   iii <-0
   for (i in 1:numatts) {
     for (j in 1:numatts) {
-      iii<-iii+1
+      iii <- iii+1
       if (echo) {print(paste("progress",round(iii/total*100,1),"%"))}
-      mm[i,j] <- length(which(apply(el,1,function(x) {
+      if (i <= j){
+        mm[i,j] <- length(which(apply(el,1,function(x) {
           get.vertex.attribute(mygraph, attrib, x[1] ) == attlist[i] && 
           get.vertex.attribute(mygraph, attrib, x[2] ) == attlist[j]  } )))
+      }
+      else{
+         mm[i,j] <- mm[j,i]
+      }
+
     }  
   }
  

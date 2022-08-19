@@ -29,7 +29,7 @@ shell("cls")
 
 ## debug mode
 echo <- TRUE
-debug <- FALSE
+debug <- T
 if (debug){print("Debug mode")}
 
 
@@ -45,8 +45,8 @@ print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 
-n_trials = 100
-if (debug){n_trials <- 20}
+n_trials = 1000
+if (debug){n_trials <- 50}
 
 # undirected graph to be used for algorithms that do not support directed
 gu <- as.undirected(g,mode = "each")
@@ -54,26 +54,19 @@ gu <- as.undirected(g,mode = "each")
 if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 ## CONSENSUS
 # resolution is a relevant parameter to define the size of clusters
-# and to induce a variability in the consensus procedure
-#res=c(0.90,0.95,1.0,1.05,1.1)
-#res=c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)### TO DO try the effect of this 
-res=c(0.2, 0.5, 0,8, 1.0, 2.0, 3.0, 4.0 ) 
+# alpha is used to induce a variability in the consensus procedure
 
+res=c( 1.2, 1.4, 1.6 ) 
+alpha = 0.05
+
+all_clusters <- cluster_N_times(g=gu, 
+	res=res,
+	n_trials=n_trials, 
+	alpha = alpha,
+	clustering_algorithm="Louvian") 
  
-clusters_Louvian <- cluster_N_times(g=gu, 
- res=res,
- n_trials=n_trials, 
-  alpha = 0.15,
- clustering_algorithm="Louvian") 
 
-clusters_Eigen <- cluster_N_times(g=gu, 
-	clustering_algorithm="Eigenvector",
-	n_trials=1,
-	alpha = 0.1,
-	start = NULL) 
-
-
-all_clusters <- cbind(clusters_Louvian, clusters_Eigen)
+#### TODO select only clusters with modularity below median 
 
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
@@ -84,12 +77,11 @@ as.data.frame(all_clusters,
 # Then select as a cluster only those who have a probability > threshold 50%
 
 ncompanies <- nrow(all_clusters)
-N_trials <- ncol(all_clusters)
 x <- matrix(0, nrow=ncompanies, ncol=ncompanies)
 colnames(x)<-V(gu)$name
 rownames(x)<-V(gu)$name
 
-for (i in (1:N_trials)){
+for (i in (1:n_trials)){
  	if (echo) print(paste("comparing cluster assignation ", i))
  	nclusters <- max(all_clusters[,i])
 	for (k in 1:nclusters) {
@@ -103,37 +95,45 @@ for (i in (1:N_trials)){
 	}
 }
 
-x<-x/N_trials #normalize
+x<-x/n_trials #normalize
+
 threshold = .5			 # threshold to decide on membership
 current.cluster = 0 	
 
-consensus_clusters <- as_tibble_col(rownames(x)) %>%
-	mutate(membership=0)
+consensus_clusters <- as_tibble_col(rownames(x)) %>% mutate(membership=0)
 more_clusers_to_be_found=TRUE
-remaining_prob<-x
-min.points <- 5 # counts only clusters with min.points or more members
+remaining <- x
+min_vids <- 3 # counts only clusters with min_vids or more members
 
-print("identify clusters above min.points")
-ccs <- tibble(name = "x",mbshp = -1) %>%head(0)
+print("identify clusters above min_vids")
+ccs <- tibble(name = "x", mbshp = -1, prob = 0.0) %>% head(0)
 
 while (more_clusers_to_be_found){
-	cluster_ii_members <- which(remaining_prob[1,] > threshold)
-	remaining_prob<- remaining_prob[-cluster_ii_members,-cluster_ii_members]
 
-	if(length(cluster_ii_members) >= min.points) {
-	current.cluster <- current.cluster + 1
-	for (nn in names(cluster_ii_members)){
-		ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster)
+	cluster_ii_members <- which(remaining[1, ] > threshold)
+	selected <- remaining[cluster_ii_members, cluster_ii_members]
+	remaining<- remaining[-cluster_ii_members, -cluster_ii_members]
+
+	if(length(cluster_ii_members) >= min_vids) {
+		current.cluster <- current.cluster + 1
+		if(echo) print(paste("Processing cluster ", current.cluster, " with ", nrow(selected), "vertices"))
+		
+		for (j in 1:nrow(selected)) {
+			selected[j,j]<- 0.0 #diagonal elements do not matter
+			pp <- max(selected[j,])
+			nn <- names(selected[1,])[j]
+			ccs <- ccs %>% add_row(name=nn , mbshp=current.cluster, prob = pp) 
+			print(paste("Adding vid ", nn,pp))
+		}
 	}
-	if(echo){print(paste("Cluster ", current.cluster, " has ", length(cluster_ii_members), " members"))}
-	}
-	if ( nrow(remaining_prob) > min.points) {
-		more_clusers_to_be_found=TRUE
-	} 
 	else{
-		more_clusers_to_be_found=FALSE
+		if(echo){print(paste("a group below threshold ", current.cluster, " with ", length(cluster_ii_members), "vertices"))
 	}
 }
+	if (nrow(remaining) > min_vids) {more_clusers_to_be_found=TRUE} 
+	else{more_clusers_to_be_found=FALSE}
+}
+ 
 # from here on we are back to directed graph g (not gu!)
 print("sorting cluster labels...")
 V(g)$CL1 <- 0
@@ -153,38 +153,29 @@ for (i in cl_conv_table$cccc){
 	cl_new_labels <- cl_new_labels + 1
 }
 
-print("Assign probability")
-cl_membership <- tibble(name=V(g)$name,cluster=V(g)$CL1, probability = 0)
-pp <- c()
-for (nnn in cl_membership$name){
-	assignations <- x[nnn,] #select row
-	assignations <- assignations[which(names(assignations) != nnn)] #remove diagonal element
-	pp <- append(pp, max(assignations))
-}
+# print("Assign probability")
 
-cl_membership$probability <- pp
-windows();hist(cl_membership$probability)
-table(cl_membership$probability)
-
+V(g)$CL1_p <- 0.0
+for (i in 1:nrow(ccs)) V(g)[ccs[i,]$name]$CL1_p <- ccs[i,]$prob
+windows();hist(V(g)$CL1_p)
+ 
 print("Saving results")
-cl_membership %>% write_csv("./results/clusters_consensus.csv")
-
+ccs %>% write_csv("./results/clusters_consensus.csv")
 
 
 # create a "community" object, standard igraph output
-# clusters_lvC <- make_clusters(
+# clusters_consensus <- make_clusters(
 # g,
-# membership = V(g)$mmbrsp,
+# membership = V(g)$CL1,
 # algorithm = "louvian consensus",
 # merges = NULL,
 # modularity = FALSE
 # )
-
 ####
 
 show_subgraphs (g, 
  clusters_membership = V(g)$CL1, 
- nrows=3,
+ nrows=5,
  ncols=5,
  label="CL1" ) 
 

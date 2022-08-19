@@ -36,14 +36,15 @@ source("./code/functions-cluster-attributes.R")
 
 ## load graph
 print("Loading graph...")
-g <- read_graph("./results/graph.csv", format="graphml")
+
+g <- read_graph("./results/communities_consensus.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
-clusters_consensus <- read_csv("./results/clusters_consensus.csv")
-add_clusters <- as.tibble(  V(g)$name) %>% 
-      rename(name = value) %>% 
-      left_join(clusters_consensus, by = "name")
-V(g)$CL1 <- add_clusters$cluster
-V(g)$CL1_p <- add_clusters$probability
+# clusters_consensus <- read_csv("./results/clusters_consensus.csv")
+# add_clusters <- as.tibble(  V(g)$name) %>% 
+#       rename(name = value) %>% 
+#       left_join(clusters_consensus, by = "name")
+# V(g)$CL1 <- add_clusters$cluster
+# V(g)$CL1_p <- add_clusters$probability
  
 
 org_names <- read_csv("./tmp/organisations.csv")%>%
@@ -119,7 +120,6 @@ for (i in clusters_to_process){
 
       # row 3 professional groups ------------------------------------------------
             current_pg <- get.professional.groups(gi, cluster_name="current_pg")
-            print(current_pg )
             data_pg <- bind_rows(current_pg,reference_pg)
             data_pg<-data_pg %>%
                   select(-Freq)%>%
