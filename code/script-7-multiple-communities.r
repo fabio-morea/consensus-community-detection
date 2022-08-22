@@ -44,7 +44,14 @@ info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC,
                         qualif = E(g)$qualif,            pg = E(g)$PG)
 
 
-show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1, scale_edges=1){
+# show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1, scale_edges=1){
+
+a=2
+b=7
+order = 1
+delta = 1
+scale_vids=2
+scale_edges=2
 
       ids_only_A <- which( (V(g)$CL1 == a ))
       ids_only_B <- which( (V(g)$CL1 == b ))
@@ -56,18 +63,21 @@ show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1,
       neib_B <- unique(names(unlist(ego(g, order=order, nodes = ids_only_B))))
       
   
-      if(order == 0) {gg <- induced.subgraph(g, append(neib_A,neib_B))} 
-      else {gg <- induced.subgraph(g, intersect(neib_A,neib_B))}
+      if(order == 0) {gg <- induced.subgraph(g, append(neib_A,neib_B))} else {gg <- induced.subgraph(g, intersect(neib_A,neib_B))}
        
       V(gg)$color <- "gray"
-      V(gg)[V(gg)$name %in% intersect(neib_A, neib_B)]$color <- "#36893680"
+      V(gg)[V(gg)$name %in% intersect(neib_A, neib_B)]$color <- "#fff70080"
       V(gg)[V(gg)$name %in% vids_A]$color <- "#0000ff80"
       V(gg)[V(gg)$name %in% vids_B]$color <- "#ff000080"
 
       coords <- layout_(gg, with_fr(), normalize(xmin=-1,xmax=1,ymin=-1,ymax=1))
 
-      core <- coreness(gg)
-      V(gg)$dd <- order + (core/max(core)) * delta 
+      # expand X axis proportional to coreness
+      # core <- coreness(gg)
+      # V(gg)$dd <- order + (core/max(core)) * delta 
+
+      # expand X axis proportional to probability
+      V(gg)$dd <- (V(gg)$CL1_p - 0.6)*delta + order 
  
       mean_y_A = mean(coords[V(gg)$name %in% vids_A,2])
       mean_y_B = mean(coords[V(gg)$name %in% vids_B,2])
@@ -102,21 +112,18 @@ show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1,
       
       
      
-      }
+      # }
 
    
  
 
-show_clusters_AB(a=2,b=7, order=0 , delta = 3, scale_vids = 4)
-show_clusters_AB(a=2,b=7, order=1 , delta = 2, scale_vids = 2)
+# show_clusters_AB(a=2,b=7, order=0 , delta = 3, scale_vids = 4)
+# show_clusters_AB(a=2,b=7, order=1 , delta = 2, scale_vids = 2)
+# show_clusters_AB(a=9,b=10, order=0 , delta = 2, scale_vids = 5)
+# show_clusters_AB(a=3,b=7, order=0 , delta = 3, scale_vids = 3, scale_edges=1)
+# show_clusters_AB(a=3,b=7, order=1 , delta = 3, scale_vids = 3, scale_edges=1)
 
-show_clusters_AB(a=9,b=10, order=0 , delta = 2, scale_vids = 5)
-
-show_clusters_AB(a=3,b=7, order=0 , delta = 3, scale_vids = 3, scale_edges=1)
-
-show_clusters_AB(a=3,b=7, order=1 , delta = 3, scale_vids = 3, scale_edges=1)
-
-
+is_in_A <- V(gg)[i]$name %in% vids_A
   
 
       
