@@ -49,8 +49,8 @@ info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC,
 a=2
 b=7
 order = 1
-delta = 1
-scale_vids=2
+delta = 0.4
+scale_vids=1.5
 scale_edges=2
 
       ids_only_A <- which( (V(g)$CL1 == a ))
@@ -70,7 +70,7 @@ scale_edges=2
       V(gg)[V(gg)$name %in% vids_A]$color <- "#0000ff80"
       V(gg)[V(gg)$name %in% vids_B]$color <- "#ff000080"
 
-      coords <- layout_(gg, with_fr(), normalize(xmin=-1,xmax=1,ymin=-1,ymax=1))
+      coords <- layout_(gg, with_kk(), normalize(xmin=-1,xmax=1,ymin=-1,ymax=1))
 
       # expand X axis proportional to coreness
       # core <- coreness(gg)
@@ -91,6 +91,9 @@ scale_edges=2
             else if (V(gg)[i]$name %in% vids_B) {
                   coords[i,1] <- abs(coords[i,1]) + dd 
                   coords[i,2] <- coords[i,2]-mean_y_B
+            }
+            else{
+                  coords[i,2] <- abs(coords[i,2])*.5 - 2.0 *delta -1
             }
                         
             if (abs(coords[i,2]) > 1 ) {
