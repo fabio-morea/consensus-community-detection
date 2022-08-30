@@ -39,51 +39,74 @@ layout_concentric <- function(n,k,r){
 	return(coords)
 }
 
-coords <- layout_concentric (n = 24, k = 12, r = 3)
-
-ggplot(coords)+geom_point(aes(x=x,y=y))
+#coords <- layout_concentric (n = 24, k = 12, r = 3)
+#ggplot(coords)+geom_point(aes(x=x,y=y))
 
 clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
 
+plot_concentric <- function(graph, 
+		simplify_graph, 
+		show_loops, 
+		top_n_vids, 
+		outer_circle,
+		red_vertex){
+
+	top_clusters <- V(clusters_graph)$name[1:top_n_vids]
+
+	ggg <- induced.subgraph(graph,vids = top_clusters)
  
+ 	if(	simplify_graph){
+		ggg <- simplify(ggg,
+		remove.multiple = TRUE,
+		remove.loops = FALSE,
+		edge.attr.comb = "sum")
+	}
 
-top_clusters <- V(clusters_graph)$name[1:30]
+	coords <- layout_concentric (
+		n = length(V(ggg)$name)-1, 
+		k = outer_circle, 
+		r = 1)
 
-# select a number of clusters
-#top_clusters <- c("0","1","2","5", "11", "12" ,"13" ,"4","8","16","22","24")
+	red_edges <- E(ggg)[from(red_vertex+1) | to(red_vertex+1)]
+	edgec <- if_else(E(ggg) %in% red_edges, "red","#bebebe54")  
 
-ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
+	vertexc <- if_else(V(ggg)$name == red_vertex, "red", "#bebebe1b")
+	vertexs <- V(ggg)$strength * 300 
 
-coords <- layout_concentric (
-	n = length(V(ggg)$name)-1, 
-	k = 6, 
-	r = 1)
+	V(ggg)$core <- graph.coreness(ggg)
+	V(ggg)$strength <- strength( ggg, loops = FALSE) 
+	edgew <- E(ggg)$weight/max(E(ggg)$weight)*10
 
+	
+	# weak edges color
+	edgec <- if_else(edgew > .2, edgec,"#cccccc00")# colour for weak links 
 
-red_vertex <- 1
-red_edges <- E(ggg)[from(red_vertex+1) | to(red_vertex+1)]
-edgec <- if_else(E(ggg) %in% red_edges, "red","#bebebe54")  
+	if (show_loops == FALSE){
+		edgec <- if_else(is.loop(ggg), "#cccccc00",edgec)
+	}
 
-vertexc <- if_else(V(ggg)$name == red_vertex, "red", "#bebebe1b")
-vertexs <- V(ggg)$strength * 300 
+	plot(ggg,
+			layout=as.matrix(coords),
+			edge.color=edgec,
+			edge.width=edgew,
+			vertex.size=vertexs,
+			vertex.color = vertexc,
+			vertex.label.font=1,
+			vertex.label.color="#3641e1")
 
-V(ggg)$core <- graph.coreness(ggg)
-V(ggg)$strength <- strength( ggg, loops = FALSE) 
-edgew <- E(ggg)$weight/max(E(ggg)$weight)*10
-# loop color
-# edgec <- if_else(is.loop(clusters_graph), "#5759d800","#07d84dcd")
-# weak edges color
-edgec <- if_else(edgew > .2, edgec,"#cccccc00")# colour for weak links 
+} 
 
+plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=TRUE, 
+	top_n_vids=30, 
+	red_vertex=1)
 
-
-plot(ggg,
-		layout=as.matrix(coords),
-		edge.color=edgec,
-		edge.width=edgew,
-		vertex.size=vertexs,
-		vertex.color = vertexc,
-		vertex.label.font=1,
-		vertex.label.color="#3641e1")
+plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=TRUE, 
+	top_n_vids=30, 
+	outer_circle = 5,
+	red_vertex=23)
 
 print("Done")
