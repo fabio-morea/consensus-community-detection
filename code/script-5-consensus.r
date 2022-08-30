@@ -56,8 +56,8 @@ if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 # resolution is a relevant parameter to define the size of clusters
 # alpha is used to induce a variability in the consensus procedure
 
-res=c( 1.0, 1.2, 1.4, 1.6, 1.8 ) 
-alpha = 0.05
+res=c( 1.0, 1.5 , 2.0 ) 
+alpha = 0.1
 
 all_clusters <- cluster_N_times(g=gu, 
 	res=res,
@@ -66,7 +66,7 @@ all_clusters <- cluster_N_times(g=gu,
 	clustering_algorithm="Louvian") 
  
 
-#### TODO select only clusters with modularity below median 
+#### TODO select only clusters with modularity ABOVE median 
 
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
@@ -103,7 +103,8 @@ current.cluster = 0
 consensus_clusters <- as_tibble_col(rownames(x)) %>% mutate(membership=0)
 more_clusers_to_be_found=TRUE
 remaining <- x
-min_vids <- 3 # counts only clusters with min_vids or more members
+
+min_vids <- 5 # counts only clusters with min_vids or more members
 
 print("identify clusters above min_vids")
 ccs <- tibble(name = "x", mbshp = -1, prob = 0.0) %>% head(0)
@@ -202,7 +203,7 @@ ggsave("./results/figures/heatmap_clusters.png")
 
 
 clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
-# TODO add vertices info in the daa frame
+#
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
 V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE) 
 
@@ -215,13 +216,14 @@ edgec=ifelse(edgew > 1, edgec,"#ffffff00")# no colour for weak links
 vertexs<-V(clusters_graph)$strength * 200 
 
 windows();plot(clusters_graph,
- layout=layout.graphopt,
- edge.color=edgec,
- edge.width=edgew,
- vertex.size=vertexs,
- vertex.color = "#04b0ff",
- vertex.label.font=1,
- vertex.label.color="black")
+	layout=layout_with_mds,
+	edge.color=edgec,
+	#edge.width=edgew
+  vertex.size=vertexs,
+  vertex.color = "#04b0ff",
+  vertex.label.font=1,
+  vertex.label.color="black"
+)
 
 
 top_clusters <- V(clusters_graph)$name [1:10]
