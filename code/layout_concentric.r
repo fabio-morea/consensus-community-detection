@@ -100,6 +100,7 @@ plot_concentric(clusters_graph,
 	simplify_graph = TRUE, 
 	show_loops=TRUE, 
 	top_n_vids=30, 
+		outer_circle = 5,
 	red_vertex=1)
 
 plot_concentric(clusters_graph, 
@@ -107,6 +108,13 @@ plot_concentric(clusters_graph,
 	show_loops=TRUE, 
 	top_n_vids=30, 
 	outer_circle = 5,
-	red_vertex=23)
+	red_vertex=2)
+
+windows();plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=TRUE, 
+	top_n_vids=30, 
+	outer_circle = 5,
+	red_vertex=0)
 
 print("Done")

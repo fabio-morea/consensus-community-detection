@@ -47,11 +47,12 @@ print("Plotting full network in separate window...")
 plot_title <- "Full network g"
 windows();plot(g,
              edge.color="gray",
-             edge.arrow.size = 1,
-             vertex.color= if_else( V(g)$comp == maxcomp,"red","blue" ),
+             edge.size = .1,
+             edge.arrow.size = .1,
+             vertex.color= "black",
              vertex.label=NA,
-             vertex.size=5, 
-             layout=layout_with_mds)
+             vertex.size=2, 
+             layout=layout_with_graphopt)
 title(main=plot_title,cex.main=1,col.main="black")
 
 # plot only giant component
@@ -61,11 +62,12 @@ gg <- induced_subgraph(g, V(g)[ V(g)$comp == maxcomp ])
 plot_title = "Giant component "
 windows();plot(gg,
              edge.color="gray",
+               edge.size = .1,
              edge.arrow.size = 0.2,
              vertex.color= if_else ( V(gg)$comp == maxcomp,"red","blue" ),
              vertex.label=NA,
              vertex.size=2, 
-             layout=layout.graphopt)
+             layout=layout_with_mds)
 title(main=plot_title,cex.main=1,col.main="black")
 
 print("Plotting other components in separate window...")
@@ -73,11 +75,12 @@ oc <- induced_subgraph(g, V(g)[ V(g)$comp != maxcomp ])
 plot_title = "Other components "
 windows();plot(oc,
              edge.color="gray",
+              edge.size = .1,
              edge.arrow.size = 0.2,
              vertex.color= if_else ( V(gg)$comp != maxcomp,"red","blue" ),
              vertex.label=NA,
              vertex.size=3, 
-             layout=layout.fruchterman.reingold)
+             layout=layout_with_graphopt)
 title(main=plot_title,cex.main=1,col.main="black")
 
 

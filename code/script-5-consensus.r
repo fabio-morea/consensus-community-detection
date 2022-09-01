@@ -158,7 +158,7 @@ for (i in cl_conv_table$cccc){
 
 V(g)$CL1_p <- 0.0
 for (i in 1:nrow(ccs)) V(g)[ccs[i,]$name]$CL1_p <- ccs[i,]$prob
-windows();hist(V(g)$CL1_p)
+windows();hist(V(g)$CL1_p,breaks=50)
  
 print("Saving results")
 ccs %>% write_csv("./results/clusters_consensus.csv")
@@ -176,7 +176,7 @@ ccs %>% write_csv("./results/clusters_consensus.csv")
 
 show_subgraphs (g, 
  clusters_membership = V(g)$CL1, 
- nrows=5,
+ nrows=2,
  ncols=5,
  label="CL1" ) 
 
@@ -194,20 +194,15 @@ mdf <- m %>% ### HEATMAP improve labels sorting
  rownames_to_column("from") %>%
  pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
 
-mdf %>% write_csv("mdf.csv")
+##mdf %>% write_csv("mdf.csv")
 mdf %>%
  ggplot(aes(x=from, y=to, fill=weight)) + 
  geom_raster() + scale_fill_gradient(low = "white", high = "black")
 ggsave("./results/figures/heatmap_clusters.png")
 
-
-
 clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
-#
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
 V(clusters_graph)$strength <- strength( clusters_graph, loops = FALSE) 
-
- 
 
 edgew = (E(clusters_graph)$weight/max(E(clusters_graph)$weight)*100)
 
@@ -224,7 +219,6 @@ windows();plot(clusters_graph,
   vertex.label.font=1,
   vertex.label.color="black"
 )
-
 
 top_clusters <- V(clusters_graph)$name [1:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
