@@ -126,10 +126,63 @@ scale_edges=2
 # show_clusters_AB(a=3,b=7, order=0 , delta = 3, scale_vids = 3, scale_edges=1)
 # show_clusters_AB(a=3,b=7, order=1 , delta = 3, scale_vids = 3, scale_edges=1)
 
-is_in_A <- V(gg)[i]$name %in% vids_A
+#is_in_A <- V(gg)[i]$name %in% vids_A
   
+source('./code/layout_concentric.r')
 
-      
+clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
+
+
+plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=TRUE, 
+	top_n_vids=30, 
+	outer_circle = 5,
+	red_vertex=23)
+
+plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=FALSE, 
+	top_n_vids=42, 
+	outer_circle = 6,
+	red_vertex=37)
+
+print("Generate a poly_kk layout: each cluster is extracted, coordinates are calculated with layout_k_k then translated in polar coordinates to a polygon")
+
+n = 90
+set.seed(42)
+reds <- sample(1:n, size = as.integer(n/3)+1, replace = FALSE)
+g <- erdos.renyi.game(n, 0.06)
+V(g)$polylabel <- seq(1:n)
+V(g)$CL = if_else(V(g)$polylabel %in% reds, 1, 2)
+windows();plot(g, 
+      vertex.color = if_else( V(g)$CL == 1, "red", "blue"),
+      layout = layout.kamada.kawai)
+
+d = 10.0
+temp1 <- induced.subgraph(g, V(g)$CL == 1)
+lay1 <- layout.kamada.kawai(temp1)
+lay1[,1] <- lay1[,1] - d
+lay1[,2] <- lay1[,2] 
+newlay1 <- tibble(polylabel = V(temp1)$polylabel) %>% 
+      add_column(x = lay1[,1], y = lay1[,2])
+
+temp2 <- induced.subgraph(g, V(g)$CL == 2)
+lay2 <- layout.kamada.kawai(temp2)
+lay2[,1] <- lay2[,1] + d
+lay2[,2] <- lay2[,2] 
+newlay2 <- tibble(polylabel = V(temp2)$polylabel) %>% 
+      add_column(x = lay2[,1], y = lay2[,2])
+
+laysplit <- rbind(newlay1,newlay2) %>%
+      arrange(polylabel)%>%
+      select(x,y) 
+
+windows();plot(g, 
+      vertex.color = if_else( V(g)$CL == 1, "red", "blue"),
+      layout = as.matrix(laysplit))
+
+
 print("Script completed.")
 
 
