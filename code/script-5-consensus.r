@@ -37,6 +37,7 @@ if (debug){print("Debug mode")}
 suppressPackageStartupMessages(library(tidyverse))
 library(igraph)
 library(glue)
+library(ggpubr)
 
 source("./code/functions-network-analysis.R")
 
@@ -194,11 +195,62 @@ mdf <- m %>% ### HEATMAP improve labels sorting
  rownames_to_column("from") %>%
  pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
 
-##mdf %>% write_csv("mdf.csv")
+mdf %>% write_csv("./results/matrix.csv")
+# #debug
+# mdf <- read_csv("./results/matrix.csv") %>% 
+# 	mutate(from = as.integer(from)) %>%
+# 	mutate(to = as.integer(to)) 
+
 mdf %>%
  ggplot(aes(x=from, y=to, fill=weight)) + 
- geom_raster() + scale_fill_gradient(low = "white", high = "black")
+ geom_raster() + 
+ scale_fill_gradient(low = "#ff000000", high = "#ff0000") + 
+ theme_light()
 ggsave("./results/figures/heatmap_clusters.png")
+
+# iter-cluster VS itra-cluster weight
+# mdf <- read_csv("./results/matrix.csv") %>% 
+# 	mutate(from = as.integer(from)) %>%
+# 	mutate(to = as.integer(to)) 
+
+list_clusters <- mdf %>% select(from) %>% distinct() %>% pull()
+results <- tibble(cl = 0, inter = 0.0, intra = 0.0, ratio = 0.0) %>% head(0)
+for (i in list_clusters){
+	subset <- mdf %>% filter(from == i)
+	intra <- subset %>% filter(to == i) %>% select(weight) %>% sum()
+	inter <- subset %>% filter(to != i) %>% select(weight) %>% sum()
+	ratio = intra / inter
+	results <- results %>% add_row(
+		cl = i, 
+		intra = intra,
+		inter = inter, 
+		ratio = ratio)
+}
+
+p1 <- ggplot(results) + 
+	geom_point( aes(x = cl, y = inter),size = 3, shape =  16, colour = "#20bf20")+ 
+	geom_point( aes(x = cl, y = intra),size = 3, shape =  8, colour = "red")+
+	scale_x_continuous(breaks = seq(0, nrow(results)))+
+	theme_light()+theme(aspect.ratio=.4)
+plot(p1)
+ggsave("./results/figures/clusters_inter_intra.png")
+	
+ 
+p2<- ggplot(results,aes(x = cl, y = ratio)) + 
+	geom_col( fill = "gray", color = "#0000ff00")+
+	geom_hline(yintercept = 1, color = "red")+
+	scale_x_discrete(limits = as.character(seq(1, nrow(results))))+
+	theme_light()+theme(aspect.ratio=.4)
+
+plot(p2)
+ggsave("./results/figures/clusters_inter_intra_ratio.png")
+
+figure <- ggarrange(p1, p2,
+                    labels = c("intra-cluster and inter-cluste weight", 
+								"ratio intra-cluster / inter-cluster"),
+                    ncol = 1, nrow = 2)
+plot(figure)
+ggsave("./results/figures/clusters_inter_intra_2.png")
 
 clusters_graph <- graph_from_data_frame(mdf, directed = FALSE, vertices = NULL)
 V(clusters_graph)$core <- graph.coreness(clusters_graph)
