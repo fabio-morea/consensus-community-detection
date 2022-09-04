@@ -28,8 +28,8 @@
 shell("cls")
 
 ## debug mode
-echo <- TRUE
-debug <- FALSE
+echo <- T
+debug <- F
 if (debug){print("Debug mode")}
 
 
@@ -38,6 +38,7 @@ suppressPackageStartupMessages(library(tidyverse))
 library(igraph)
 library(glue)
 library(ggpubr)
+library(RColorBrewer)
 
 source("./code/functions-network-analysis.R")
 
@@ -58,7 +59,7 @@ if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 # alpha is used to induce a variability in the consensus procedure
 
 res=c( 1.0, 1.5 , 2.0 ) 
-alpha = 0.1
+alpha = 0.05
 
 all_clusters <- cluster_N_times(g=gu, 
 	res=res,
@@ -175,14 +176,33 @@ ccs %>% write_csv("./results/clusters_consensus.csv")
 # )
 ####
 
+#source("./code/functions-network-analysis.R")
 show_subgraphs (g, 
  clusters_membership = V(g)$CL1, 
  nrows=2,
- ncols=5,
+ ncols=4,
  label="CL1" ) 
 
 g %>% write_graph("./results/communities_consensus.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
+
+#https://colorbrewer2.org/type=sequential&scheme=Reds&n=5
+#palette_reds <- ['#fee5d9','#fcae91','#fb6a4a','#de2d26','#a50f15']
+#pal <- brewer.pal(length(unique(V(g)$colorscale)), "Greens")
+#palette_reds <- c('#a50f15','#de2d26' ,'#fb6a4a80','#fcae9180','#fee5d980')
+V(g)$colorscale <- round(V(g)$CL1_p,1)
+V(g)$color <- '#fff25ecc'
+V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
+V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
+V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
+V(g)$color[V(g)$colorscale == 1.0] <- '#26ab17cc'
+
+
+windows();plot(g, 
+vertex.color = V(g)$color,
+vertex.size = 10, 
+vertex.frame.color="#ffffffaa",
+vertex.label = NA)
 
 print("analysis...")
 

@@ -23,6 +23,8 @@ echo <- TRUE
 suppressPackageStartupMessages(library(tidyverse))
 library(igraph)
 library(glue)
+library(infotheo)
+library(ggpubr)
 
 source("./code/functions-network-analysis.R")
 
@@ -126,14 +128,83 @@ cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
 cc <- rbind(cc, community.size(clusters_lv, mm="Louvian") )
 cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
-non.trivial.communities <- cc %>% filter(c_sizes > 2)
+minpoints <- 2
+non.trivial.communities <- cc %>% filter(c_sizes > minpoints)
 
 figure<- ggplot(non.trivial.communities)+
-geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
-geom_point(size=5, aes(x=i,y=c_sizes, group=method, col=method))+
-theme_light()+theme(aspect.ratio=0.71)+
-facet_grid(. ~ method )
+    geom_line(aes(x=i,y=c_sizes, group=method, col=method))+
+    geom_point(size=5, aes(x=i,y=c_sizes, group=method, col=method))+
+    theme_light()+theme(aspect.ratio=0.71)+
+    facet_grid(. ~ method )
 windows();plot(figure)
 ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=300)
 
+
+# Louvain clustering depends on random initialisation
+# we measure the differences over 1000 trials
+# our reference is i_best the trial with highest moularity
+
+# differences in clusters assignation are measured with NMI Normalized Mutual Information
+#mutinformation takes two random variables as input 
+# and computes the mutual information in nats according to the entropy estimator method. 
+#If Y is not supplied and X is a matrix-like argument, the function returns a matrix of mutual information between all pairs of variables in the dataset X.
+
+NMI=c()
+all_clusters = c()
+minpoints <- 2
+n = 1000
+results<-tibble(i = 1, m=0.0,n_clust=as.integer(0),NMI = 0.0)%>%head(0)
+for (i in 1:n){
+    clusters_tmp <- cluster_louvain(as.undirected(g),  resolution = 2.0)
+    all_clusters<- cbind(all_clusters,clusters_tmp$membership)
+    m <- modularity (g,  clusters_tmp$membership)
+    size <- table(membership(clusters_tmp) )%>%
+            sort( decreasing = TRUE)%>%
+            unname() 
+    non_trivial_clusters <- as.integer(length(size[ size > minpoints]))
+    results <- results%>%add_row(i=i, m=m, n_clust=non_trivial_clusters )
+}
+
+#histogram of modularity
+hm <- ggplot(results,aes(x=m)) + 
+    geom_histogram( colour = "gray", fill = "blue",binwidth=0.0005)+
+    theme_light()
+
+hc <- ggplot(results,aes(x=n_clust)) + 
+    geom_histogram( colour = "gray", fill = "blue",binwidth=1)+
+    theme_light()
+
+figure <- ggarrange(hm, hc,                    
+             labels = c("modularity", "number of clusters"),
+                    ncol = 2, nrow = 1)+theme(aspect.ratio=.4)
+windows();plot(figure)
+ggsave("./results/figures/modularity_nclusters.png")
+
+
+i_best = which.max(results$m)
+for (i in 1:n){
+  mut_inf <- mutinformation(all_clusters[,i],all_clusters[,i_best], method="emp")
+  entr    <- sqrt(entropy(all_clusters[,i_best]) * entropy(all_clusters[,i_best]) )
+  NMI     <- mut_inf/ entr
+  results$NMI[i] <- NMI
+}
+
+#histogram of modularity
+hnmi <- ggplot(results,aes(x=NMI)) + 
+    geom_histogram( colour = "white", fill = "green",binwidth=0.01)+
+        #geom_density()+
+        theme_light()+coord_flip()
+
+qqdata <- as.data.frame(qqplot(results$m, results$NMI,plot.it=FALSE)) %>%
+    rename(NMI = y) %>%
+    rename(modularity = x)
+qq <- ggplot(qqdata,aes(x=modularity, y = NMI)) + geom_point(size = 3, colour = "green")+
+    theme_light()
+plot(qq)
+
+figure <- ggarrange(qq,hnmi,
+            labels = c("Q-Qplot modularity-NMI", "Histogram"),
+            ncol = 2, nrow = 1)+ theme(aspect.ratio=.4)
+plot(figure)
+ggsave("./results/figures/QQ-NMI.png")
 print("Script completed.")

@@ -10,6 +10,12 @@ library(tidyverse)
 
 library(igraph)
 
+# 
+#coords <- layout_concentric (n = 24, k = 12, r = 3)
+#ggplot(coords)+geom_point(aes(x=x,y=y))
+#clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
+
+
 layout_concentric <- function(n,k,r){
 	# generates a layout composed of a center (index == 0)
 	# an inner circle of radius r/2 with the first k elements
@@ -38,11 +44,6 @@ layout_concentric <- function(n,k,r){
 	}
 	return(coords)
 }
-
-#coords <- layout_concentric (n = 24, k = 12, r = 3)
-#ggplot(coords)+geom_point(aes(x=x,y=y))
-
-clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
 
 plot_concentric <- function(graph, 
 		simplify_graph, 
@@ -96,25 +97,25 @@ plot_concentric <- function(graph,
 
 } 
 
-plot_concentric(clusters_graph, 
-	simplify_graph = TRUE, 
-	show_loops=TRUE, 
-	top_n_vids=30, 
-		outer_circle = 5,
-	red_vertex=1)
+# plot_concentric(clusters_graph, 
+# 	simplify_graph = TRUE, 
+# 	show_loops=TRUE, 
+# 	top_n_vids=30, 
+# 		outer_circle = 5,
+# 	red_vertex=1)
 
-plot_concentric(clusters_graph, 
-	simplify_graph = TRUE, 
-	show_loops=TRUE, 
-	top_n_vids=30, 
-	outer_circle = 5,
-	red_vertex=2)
+# plot_concentric(clusters_graph, 
+# 	simplify_graph = TRUE, 
+# 	show_loops=TRUE, 
+# 	top_n_vids=30, 
+# 	outer_circle = 5,
+# 	red_vertex=2)
 
-windows();plot_concentric(clusters_graph, 
-	simplify_graph = TRUE, 
-	show_loops=TRUE, 
-	top_n_vids=30, 
-	outer_circle = 5,
-	red_vertex=0)
+# windows();plot_concentric(clusters_graph, 
+# 	simplify_graph = TRUE, 
+# 	show_loops=TRUE, 
+# 	top_n_vids=30, 
+# 	outer_circle = 5,
+# 	red_vertex=0)
 
-print("Done")
+# print("Done")

@@ -42,9 +42,9 @@ scatter_strength_core <- function(g,gi){
             mutate(community = if_else(name %in% V(gi)$name, 1, 0))
 
 
-    mut_inf <- mutinformation(data$core,data$stre, method="emp")
-    entr    <- sqrt(entropy(data$core) * entropy(data$stre) )
-    NMI     <- round(mut_inf/ entr,3)
+    # mut_inf <- mutinformation(data$core,data$stre, method="emp")
+    # entr    <- sqrt(entropy(data$core) * entropy(data$stre) )
+    # NMI     <- round(mut_inf/ entr,3)
 
    scatterplot <- ggplot(data) + theme_classic()+ 
               geom_point(aes(y = stre, x = core, 
@@ -58,7 +58,7 @@ scatter_strength_core <- function(g,gi){
                         scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
                         theme(panel.grid.major = element_line(color = "gray"))+
                         labs(title = "Comparison of strength and coreness",
-                              subtitle = glue("Normalized Mutual Information ", NMI),
+                              #subtitle = glue("Normalized Mutual Information ", NMI),
                               caption = glue("number of vertices: ",length(V(g))))
 
     return(scatterplot)

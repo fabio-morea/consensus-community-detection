@@ -41,7 +41,16 @@ describe_communities <- function(g, clusters,mm){
 show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" ) {
 
     nsubgraphs <- nrows*ncols
-    windows()
+    #palette_reds <- c('#a50f14','#de2d26' ,'#fb6a4a','#fcae91','#ffd7c5', "#cdcdcd", "#f6f4d0")
+    V(g)$colorscale <- round(V(g)$CL1_p,1)
+    V(g)$color <- '#c1bb77'
+    V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
+    V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
+    V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
+    V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
+    
+    print(unique(V(g)$colorscale))
+
     par(mfrow=c(nrows,ncols))
 
     cluster_summary <- clusters_membership%>% 
@@ -64,9 +73,11 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
         edge.color="gray",
         edge.width=E(gi)$weight/2,
         edge.arrow.size= E(gi)$weight/20,
-        vertex.color=factor(V(gi)$core),
+        #vertex.color=factor(V(gi)$core),
+        vertex.color = V(gi)$color,
+        vertex.frame.color="#ffffffaa",
         vertex.label=NA,
-        vertex.size=V(gi)$core,
+        vertex.size=sqrt(V(gi)$deg)*3,
         layout=layout.graphopt) 
 
       text(x=0, y=1.3,  glue(label," Community ",i)  ,cex=1.0)
