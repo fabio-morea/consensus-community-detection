@@ -92,16 +92,18 @@ NMI     <- round(mut_inf/ entr,3)
 scatterplot <- as_tibble_col(coreness_g) %>%
                 add_column(degree_g) %>%
                 mutate(coreness_g=value) %>%
-                ggplot() + 
-                geom_point(aes(y = degree_g, x = coreness_g))+
+                ggplot(aes(y = degree_g, x = coreness_g)) + 
+                geom_point(size = 6, color = "#2eb25358")+
                 theme_classic()+
+                scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
+                theme(panel.grid.major = element_line(color = "gray"))+
+                theme(aspect.ratio = 0.5)+
                 labs(title = "Comparison of degree and coreness of the full network",
-                            subtitle = glue("Normalized Mutual Information ", NMI),
-                            caption = glue("number of vertices: ",length(V(g))))
-
-png("./results/figures/figure_scatterplot.png")
-print(scatterplot)
-dev.off()
+                            subtitle = glue("number of vertices: ",length(V(g))))
+windows();plot(scatterplot)
+ggsave("./results/figures/figure_scatterplot.png",
+  width = 24, heigh = 12, units = "cm")
+ 
 
 # saving
 print("Saving results...")
