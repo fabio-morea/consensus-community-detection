@@ -49,9 +49,7 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
     V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
     V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
     
-    print(unique(V(g)$colorscale))
-
-    par(mfrow=c(nrows,ncols))
+    par(mfrow=c(nrows,ncols), mar=c(.01,.01,.01,.01))
 
     cluster_summary <- clusters_membership%>% 
       as_tibble_col()%>%
@@ -80,8 +78,8 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
         vertex.size=sqrt(V(gi)$deg)*3,
         layout=layout.graphopt) 
 
-      text(x=0, y=1.3,  glue(label," Community ",i)  ,cex=1.0)
-      text(x=0, y=1.1,  glue("number of nodes: ", length(V(gi)) ),cex=.8)
+      text(x=0, y=1.0,  glue(label," Community ",i)  ,cex=1.5)
+      text(x=0, y=0.9,  glue("number of nodes: ", length(V(gi)) ),cex=1.2)
     }
 }
 

@@ -38,14 +38,14 @@ if (debug){
 gu <- as.undirected(g,mode = "each")
 
 results <- tibble(resolution=0.0, nn=1, size=0.0)%>%head(0)
-resolutions <- c(seq(0.6, 2.0, 0.1) )
+resolutions <- c(seq(0.6, 1.6, 0.2) )
 for (res in resolutions){
     clusters_lv <- cluster_louvain(gu,  resolution = res)
     assigned_membership <- membership(clusters_lv)
     clusters <- as.integer(unname(table(assigned_membership)))%>%
             as_tibble_col() %>%
             rename(size = value)%>%
-            filter(size > 5) %>%
+            filter(size > 2) %>%
             arrange (-size)%>%
             rownames_to_column()  %>%
             rename(nn = rowname)%>%
@@ -55,20 +55,19 @@ for (res in resolutions){
      
     n_clusters = nrow(clusters)
     average_size = round(mean(clusters$size),2)
-
     results <- results %>% add_row(clusters)
-
     print(paste("Resolution: ", res, "non-trivial clusters: ", n_clusters, "average size", average_size))
     #print(modularity(clusters_lv))
 }
   
- 
+
 figure<- ggplot(results)+
 geom_line(aes(x=nn,y=size, group=resolution, col=resolution))+
-geom_point(size=5, aes(x=nn,y=size, group=resolution, col=resolution))+
-theme_light()+theme(aspect.ratio=0.71)+
-facet_wrap(. ~ resolution, ncol = 4)
+geom_point(size=1, aes(x=nn,y=size, group=resolution, col=resolution))+
+theme_light()+theme(aspect.ratio = .7)+
+facet_wrap(. ~ resolution, ncol = 6)
 windows();plot(figure)
-ggsave (file="./results/figures/figure_resolution.png", width=20, height=12, dpi=300)
+ggsave (file="./results/figures/figure_resolution.png", 
+    width=24, height=5, units="cm")
 
 print("Script completed.")

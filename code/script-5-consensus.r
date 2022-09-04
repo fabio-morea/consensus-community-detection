@@ -29,7 +29,7 @@ shell("cls")
 
 ## debug mode
 echo <- T
-debug <- F
+debug <- T
 if (debug){print("Debug mode")}
 
 
@@ -58,8 +58,8 @@ if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 # resolution is a relevant parameter to define the size of clusters
 # alpha is used to induce a variability in the consensus procedure
 
-res=c( 1.0, 1.5 , 2.0 ) 
-alpha = 0.05
+res=c( 1.5, 1.75 , 2.0 ) 
+alpha = 0.1
 
 all_clusters <- cluster_N_times(g=gu, 
 	res=res,
@@ -198,11 +198,7 @@ V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
 V(g)$color[V(g)$colorscale == 1.0] <- '#26ab17cc'
 
 
-windows();plot(g, 
-vertex.color = V(g)$color,
-vertex.size = 10, 
-vertex.frame.color="#ffffffaa",
-vertex.label = NA)
+ 
 
 print("analysis...")
 

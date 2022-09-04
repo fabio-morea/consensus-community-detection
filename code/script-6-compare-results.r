@@ -39,6 +39,14 @@ print("Loading graph...")
 
 g <- read_graph("./results/communities_consensus.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
+
+V(g)$colorscale <- round(V(g)$CL1_p,1)
+V(g)$color <- '#c1bb77'
+V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
+V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
+V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
+V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
+
 # clusters_consensus <- read_csv("./results/clusters_consensus.csv")
 # add_clusters <- as.tibble(  V(g)$name) %>% 
 #       rename(name = value) %>% 
@@ -90,11 +98,12 @@ for (i in clusters_to_process){
             png(cluster_figure_name, 600, 600)
             plot(gi, 
                   edge.color="gray",
-                  edge.width=E(gi)$weight,
+                  edge.width=E(gi)$weight*2,
                   edge.arrow.size= E(gi)$weight,
-                  vertex.color="red",
+                  vertex.color = V(gi)$color,
+                  vertex.frame.color="#ffffffaa",
                   vertex.label=NA,
-                  vertex.size=V(gi)$core,
+                  vertex.size=sqrt(V(gi)$deg)*3,
                   layout=layout.graphopt) 
             dev.off()
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
