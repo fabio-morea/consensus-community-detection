@@ -29,7 +29,7 @@ shell("cls")
 
 ## debug mode
 echo <- T
-debug <- T
+debug <- F
 if (debug){print("Debug mode")}
 
 
@@ -46,7 +46,7 @@ source("./code/functions-network-analysis.R")
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
-
+stopifnot(gorder(g) >0)
 n_trials = 1000
 if (debug){n_trials <- 50}
 
@@ -68,8 +68,7 @@ all_clusters <- cluster_N_times(g=gu,
 	clustering_algorithm="Louvian") 
  
 
-#### TODO select only clusters with modularity ABOVE median 
-
+ 
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
  write_csv("./results/clusters_N.csv")
@@ -106,18 +105,23 @@ consensus_clusters <- as_tibble_col(rownames(x)) %>% mutate(membership=0)
 more_clusers_to_be_found=TRUE
 remaining <- x
 
-min_vids <- 5 # counts only clusters with min_vids or more members
+min_vids <- 2 # counts only clusters with min_vids or more members
+min_weight <- 0.005 * sum(V(gu)$str) # counts only clusters above a given treshold
+weights <- V(gu)$str
 
 print("identify clusters above min_vids")
 ccs <- tibble(name = "x", mbshp = -1, prob = 0.0) %>% head(0)
 
 while (more_clusers_to_be_found){
-
+	
 	cluster_ii_members <- which(remaining[1, ] > threshold)
 	selected <- remaining[cluster_ii_members, cluster_ii_members]
 	remaining<- remaining[-cluster_ii_members, -cluster_ii_members]
 
-	if(length(cluster_ii_members) >= min_vids) {
+	print(paste(current.cluster, sum(weights[cluster_ii_members])))
+
+	if(length(cluster_ii_members) >= min_vids & 
+		sum(weights[cluster_ii_members]) > min_weight) {
 		current.cluster <- current.cluster + 1
 		if(echo) print(paste("Processing cluster ", current.cluster, " with ", nrow(selected), "vertices"))
 		
@@ -198,7 +202,7 @@ V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
 V(g)$color[V(g)$colorscale == 1.0] <- '#26ab17cc'
 
 
- 
+print(stophere)
 
 print("analysis...")
 

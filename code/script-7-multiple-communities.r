@@ -44,14 +44,14 @@ info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC,
                         qualif = E(g)$qualif,            pg = E(g)$PG)
 
 
-# show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1, scale_edges=1){
+show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1, scale_edges=1){
 
-a=2
-b=7
-order = 1
-delta = 0.4
-scale_vids=1.5
-scale_edges=2
+# a=1
+# b=2
+# order = 1
+# delta = 0.4
+# scale_vids=1.5
+# scale_edges=2
 
       ids_only_A <- which( (V(g)$CL1 == a ))
       ids_only_B <- which( (V(g)$CL1 == b ))
@@ -77,7 +77,7 @@ scale_edges=2
       # V(gg)$dd <- order + (core/max(core)) * delta 
 
       # expand X axis proportional to probability
-      V(gg)$dd <- (V(gg)$CL1_p - 0.6)*delta + order 
+      V(gg)$dd <- (V(gg)$CL1_p - 0.6)*delta #+ order 
  
       mean_y_A = mean(coords[V(gg)$name %in% vids_A,2])
       mean_y_B = mean(coords[V(gg)$name %in% vids_B,2])
@@ -93,7 +93,7 @@ scale_edges=2
                   coords[i,2] <- coords[i,2]-mean_y_B
             }
             else{
-                  coords[i,2] <- abs(coords[i,2])*.5 - 2.0 *delta -1
+                  coords[i,2] <- abs(coords[i,2]) - 5.0 *delta 
             }
                         
             if (abs(coords[i,2]) > 1 ) {
@@ -106,7 +106,7 @@ scale_edges=2
          windows();plot(gg,
                   edge.color="#00000048",
                   edge.width=E(gg)$ww*scale_edges,
-                  edge.arrow.size= delta/10,#E(gg)$ww*scale_edges*.2,
+                  edge.arrow.size= delta/20, 
                   vertex.color= V(gg)$color,
                   vertex.frame.color = "white",
                   vertex.label= NA,
@@ -115,19 +115,23 @@ scale_edges=2
       
       
      
-      # }
+}
 
    
  
 
-# show_clusters_AB(a=2,b=7, order=0 , delta = 3, scale_vids = 4)
+show_clusters_AB(a=1,b=2, order=0 , delta = 8, scale_vids = 2)
+
+show_clusters_AB(a=14,b=2, order=0 , delta = 1, scale_vids = 1)
+show_clusters_AB(a=2,b=3, order=1 , delta = 1, scale_vids = 1)
+
+
 # show_clusters_AB(a=2,b=7, order=1 , delta = 2, scale_vids = 2)
 # show_clusters_AB(a=9,b=10, order=0 , delta = 2, scale_vids = 5)
 # show_clusters_AB(a=3,b=7, order=0 , delta = 3, scale_vids = 3, scale_edges=1)
 # show_clusters_AB(a=3,b=7, order=1 , delta = 3, scale_vids = 3, scale_edges=1)
-
-#is_in_A <- V(gg)[i]$name %in% vids_A
-  
+ 
+   
 source('./code/layout_concentric.r')
 
 clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")

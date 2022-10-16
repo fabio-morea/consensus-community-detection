@@ -44,7 +44,7 @@ links <- read_csv("./tmp/links.csv") %>%
             select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE_group, sede_op_ateco) 
             
 # weight is limited between 0 and maxWeight
-maxWeight <- 1.0
+maxWeight <- 3.0
 links <- links %>% 
   mutate(weight = if_else(ww > maxWeight, maxWeight, ww))
 
@@ -73,6 +73,8 @@ degree_g    <- igraph::degree(g, mode = "all", normalized = FALSE)
 V(g)$deg    <- degree_g
 histogram.png(degree_g,   "./results/figures/figure_degree.png")
 
+# Nodes' strength
+print("Analysing strength...")
 str_g    <- igraph::strength(g)
 V(g)$str    <- str_g
 histogram.png(str_g,   "./results/figures/figure_str.png")
@@ -90,15 +92,15 @@ entr    <- sqrt(entropy(coreness_g) * entropy(degree_g) )
 NMI     <- round(mut_inf/ entr,3)
 
 scatterplot <- as_tibble_col(coreness_g) %>%
-                add_column(degree_g) %>%
+                add_column(str_g) %>%
                 mutate(coreness_g=value) %>%
-                ggplot(aes(y = degree_g, x = coreness_g)) + 
+                ggplot(aes(y = str_g, x = coreness_g)) + 
                 geom_point(size = 6, color = "#2eb25358")+
                 theme_classic()+
                 scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
                 theme(panel.grid.major = element_line(color = "gray"))+
                 theme(aspect.ratio = 0.5)+
-                labs(title = "Comparison of degree and coreness of the full network",
+                labs(title = "Comparison of strength and coreness of the full network",
                             subtitle = glue("number of vertices: ",length(V(g))))
 windows();plot(scatterplot)
 ggsave("./results/figures/figure_scatterplot.png",
@@ -123,3 +125,6 @@ print("Graph completed and saved.")
 # summary_table %>% write.csv("tmp.csv", quote=FALSE)
 
 print("Script completed, please check results folder.")
+
+ 
+

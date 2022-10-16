@@ -1,6 +1,7 @@
 /data
 /results
 /tmp
+/papers
 
 # History files
 .Rhistory

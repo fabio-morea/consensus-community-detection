@@ -24,6 +24,8 @@ library(igraph)
 print("Loading data...")
 g <- read_graph("./results/graph.csv", format="graphml")
 
+
+
 windows();plot(g,
      layout=layout_with_mds,
      edge.color="gray",
@@ -52,7 +54,7 @@ windows();plot(g,
              vertex.color= "black",
              vertex.label=NA,
              vertex.size=2, 
-             layout=layout_with_graphopt)
+             layout=layout_with_mds,)
 title(main=plot_title,cex.main=1,col.main="black")
 
 # plot only giant component

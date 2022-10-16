@@ -68,17 +68,20 @@ reference_pg  <- get.professional.groups(g, cluster_name="reference_pg")
 reference_loc <- get.locations(g, cluster_name="reference_loc")
 reference_sec <- get.sectors(g, cluster_name="reference_sec")
 
-min_cluster_size_to_plot <- 20
+min_cluster_size_to_plot <- 12
 clusters_to_process <- sort(unique(V(g)$CL1))
 if (debug){################# DEBUG ##############################################
-      clusters_to_process <- clusters_to_process[1:10]
+      clusters_to_process <- clusters_to_process[1:5]
 }  
  plot_list <- list()
-
+iii <- 1
 for (i in clusters_to_process){
       gi <- induced.subgraph(g, V(g)[ V(g)$CL1 == i ])
       cl_size <- length(V(gi)$name)
-      if (cl_size>min_cluster_size_to_plot){
+      number_of_edges <- length(E(gi))
+      if ((cl_size>min_cluster_size_to_plot) & 
+            (number_of_edges > 0) ){
+            iii <- iii + 1
             print(paste("processing cluster",i, "  size", cl_size))
             info_vids_gi  <- info_vids  %>% filter(V(g)$name %in% V(gi)$name)
             #info_edges_gi <- info_edges %>% filter(E(g) %in% E(gi))
@@ -126,9 +129,9 @@ for (i in clusters_to_process){
                   
             row2 <- ggarrange(table_names,scatter_plot, ncol = 2, 
                         labels = c("company names ", ""))
-
-      # row 3 professional groups ------------------------------------------------
+       # row 3 professional groups ------------------------------------------------
             current_pg <- get.professional.groups(gi, cluster_name="current_pg")
+            
             data_pg <- bind_rows(current_pg,reference_pg)
             data_pg<-data_pg %>%
                   select(-Freq)%>%
@@ -188,12 +191,17 @@ for (i in clusters_to_process){
 
       # page --------------------------------------------------
             if (echo) print(paste("adding to plot list ", i ))
-            plot_list[[i+1]] <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
+            plot_list[[iii+1]] <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
+            tmp <- ggarrange(row1, row2,row3, row4,row5,   nrow = 5 )
+            ggsave(filename = paste0("./results/figures/comm_detection_results",i,".pdf"), 
+            plot = tmp , 
+            width = 19, height = 29)
+            # print(iii)
+            # windows();plot(plot_list[[iii+1]])
   }
 }
-
-
-
+ 
+#print(plot_list)
 #all plots in a pdf, one for each page
 ggsave(filename = "./results/figures/comm_detection_results.pdf", 
    plot = marrangeGrob(plot_list, nrow=1, ncol=1), 

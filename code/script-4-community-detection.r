@@ -46,47 +46,47 @@ g_undirected <- as.undirected(g,mode = "each")
 
 
 
-## community detection using Edge Betweenneess algorithm *************************************************************
-## https://www.rdocumentation.org/packages/igraph/versions/1.3.2/topics/cluster_edge_betweenness
-print("Community detection using Edge Betweenneess algorithm...")
+# ## community detection using Edge Betweenneess algorithm *************************************************************
+# ## https://www.rdocumentation.org/packages/igraph/versions/1.3.2/topics/cluster_edge_betweenness
+# print("Community detection using Edge Betweenneess algorithm...")
 
-clusters_eb <- cluster_edge_betweenness(g, 
-                         weights = E(g)$ww,
-                         directed = TRUE,
-                         edge.betweenness = TRUE,
-                         merges = TRUE,
-                         bridges = TRUE,
-                         modularity = TRUE,
-                         membership = TRUE)
+# clusters_eb <- cluster_edge_betweenness(g, 
+#                          weights = E(g)$ww,
+#                          directed = TRUE,
+#                          edge.betweenness = TRUE,
+#                          merges = TRUE,
+#                          bridges = TRUE,
+#                          modularity = TRUE,
+#                          membership = TRUE)
 
-# membership stored in igraph object
-V(g)$cl_eb <- membership(clusters_eb)
-g <- delete_vertex_attr(g, "id")
+# # membership stored in igraph object
+# V(g)$cl_eb <- membership(clusters_eb)
+# g <- delete_vertex_attr(g, "id")
 
-# saving
-if (echo){print("Saving edge betweenneess membership...")}
-tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
-describe_communities(g, clusters_eb, "betweenness")
-show_subgraphs (g, clusters_membership=membership(clusters_eb), nrows=2, ncols=4, label = "betweenness" ) 
-print("EB completed.")
+# # saving
+# if (echo){print("Saving edge betweenneess membership...")}
+# tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
+# describe_communities(g, clusters_eb, "betweenness")
+# show_subgraphs (g, clusters_membership=membership(clusters_eb), nrows=2, ncols=4, label = "betweenness" ) 
+# print("EB completed.")
 
-## community detection using Eigenvector algorithm  *************************************************************
-print("Community detection using Eigenvector algorithm...")
+# ## community detection using Eigenvector algorithm  *************************************************************
+# print("Community detection using Eigenvector algorithm...")
 
-clusters_ev <- cluster_leading_eigen (g_undirected, 
-	weights = E(g_undirected)$ww,
-	start = V(g)$cl_eb,
-	options = arpack_defaults) 
+# clusters_ev <- cluster_leading_eigen (g_undirected, 
+# 	weights = E(g_undirected)$ww,
+# 	start = V(g)$cl_eb,
+# 	options = arpack_defaults) 
 
-# membership stored in igraph object
-V(g)$cl_ev <- membership(clusters_ev)
+# # membership stored in igraph object
+# V(g)$cl_ev <- membership(clusters_ev)
 
-# saving
-if (echo){print("Saving eigenvector membership...")}
-tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
-describe_communities(g_undirected, clusters_ev, "eigenvector")
-show_subgraphs (g_undirected, clusters_membership=membership(clusters_ev), nrows=2,ncols=4, label = "eigenvector" ) 
-print("EV completed.")
+# # saving
+# if (echo){print("Saving eigenvector membership...")}
+# tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
+# describe_communities(g_undirected, clusters_ev, "eigenvector")
+# show_subgraphs (g_undirected, clusters_membership=membership(clusters_ev), nrows=2,ncols=4, label = "eigenvector" ) 
+# print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
@@ -123,9 +123,9 @@ as_long_data_frame(g) %>% write_csv("./results/communities_df.csv")
 
 ## comparing results of different methods *************************************************************************
 print("Summary of communities by size")
-cc <- community.size(clusters_eb, mm="betweenness") 
-cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
-cc <- rbind(cc, community.size(clusters_lv, mm="Louvian") )
+# cc <- community.size(clusters_eb, mm="betweenness") 
+# cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
+cc <- community.size(clusters_lv, mm="Louvian") 
 cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
 minpoints <- 2

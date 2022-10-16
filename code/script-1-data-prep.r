@@ -63,8 +63,9 @@ to_remove3 <- c("2.4.1", "2.6.3", "2.6.4", "2.6.5")
 # 2.6.2.4 - Ricercatori e tecnici laureati nelle scienze dell'antichità, filologico-letterarie e storico-artistiche
 # 2.6.2.5 - Ricercatori e tecnici laureati nelle scienze storiche, filosofiche, pedagogiche e psicologiche
 # 2.6.2.7 - Ricercatori e tecnici laureati nelle scienze giuridiche, politiche e sociali
-to_remove4<-c("2.5.1.1",
-"2.3.1.4","2.3.1.5","2.6.1.2","2.6.2.2","2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
+to_remove4<-c("2.1.1.4","2.1.1.5",#software ICT
+"2.3.1.4","2.3.1.5",
+"2.6.1.2","2.6.2.2","2.6.1.4","2.6.1.5","2.6.2.4", "2.6.2.5" ,"2.6.2.7")
 
 # 2.1.1.1.2 - Astronomi ed astrofisici
 # 2.1.1.6.2 - Paleontologi
