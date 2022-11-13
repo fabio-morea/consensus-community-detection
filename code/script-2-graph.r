@@ -25,6 +25,7 @@ library(igraph)
 library(ggplot2)
 library(infotheo)
 library (glue)
+library(ggpubr)
 
 # histogram of graph degree
 histogram.png <- function(data, filename){
@@ -43,10 +44,50 @@ histogram.png <- function(data, filename){
 links <- read_csv("./tmp/links.csv") %>% 
             select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE_group, sede_op_ateco) 
             
-# weight is limited between 0 and maxWeight
-maxWeight <- 3.0
+links <- links %>% mutate(weight = 1) %>% select(cf1,cf2, weight)
+
+g1 <- graph.data.frame(links, directed=T)
+weight_g1 <- tibble(ww = round(E(g1)$weight,3))
+hist1 <- ggplot(weight_g1,aes(x=ww)) + 
+    geom_histogram( colour = "white", fill = "black" )+
+        coord_cartesian (xlim = c ( 0, 2 ), ylim = c(0,2000)) +
+        theme_light()+
+        xlab("Weight") + ylab("number of vertices")+
+        ggtitle("a) unweighted") 
+
+links <- read_csv("./tmp/links.csv") %>% 
+            select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE_group, sede_op_ateco) 
+maxWeight <- 1.0
 links <- links %>% 
-  mutate(weight = if_else(ww > maxWeight, maxWeight, ww))
+  mutate(weight = if_else(ww > maxWeight, maxWeight, ww))%>% 
+  select(cf1,cf2, weight,ww)
+g2 <- graph.data.frame(links, directed=T)
+weight_g2 <- tibble(ww = round(E(g2)$weight,3))
+hist2 <- ggplot(weight_g2,aes(x=ww)) + 
+    geom_histogram( colour = "white", fill = "black" )+
+        coord_cartesian (xlim = c ( 0, 1 ), ylim = c(0,1000)) +
+        theme_light()+
+        xlab("Weight") + #ylab("number of vertices")+
+        ggtitle("b) max weight = 1") 
+
+links <- read_csv("./tmp/links.csv") %>% 
+            select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,NACE_group, sede_op_ateco) 
+maxWeight <- 5.0
+links <- links %>% 
+  mutate(weight = if_else(ww > maxWeight, maxWeight, ww))%>% 
+  select(cf1,cf2, weight,ww)
+g3 <- graph.data.frame(links, directed=T)
+weight_g3 <- tibble(ww = round(E(g3)$weight,3))
+hist3 <- ggplot(weight_g3,aes(x=ww)) + 
+    geom_histogram( colour = "white", fill = "black" )+
+        coord_cartesian (xlim = c ( 0, 5 ), ylim = c(0,500)) +
+        theme_light()+
+        xlab("Weight") + #ylab("number of vertices")+
+        ggtitle("c) max weight = 5") 
+
+ggarrange(hist1, hist2, hist3,ncol = 3, nrow = 1)
+ggsave("./results/figures/histograms3.png",dpi=150,width = 20, height = 7, units = "cm")
+dev.off()
 
 g <- graph.data.frame(links, directed=T)
 
@@ -109,6 +150,16 @@ ggsave("./results/figures/figure_scatterplot.png",
 
 # saving
 print("Saving results...")
+links <- read_csv("./tmp/links.csv") %>% 
+            select(cf1,cf2,ww,PG,qualif,LOC,sede_op_comune,LOC,NACE_group, sede_op_ateco) %>%
+            mutate(qualif = substr(qualif,1,5))
+E(g)$sede_op_comune <- links$sede_op_comune 
+E(g)$LOC            <- links$LOC 
+E(g)$sede_op_ateco  <- links$sede_op_ateco 
+E(g)$NACE_group     <- links$NACE_group 
+E(g)$qualif         <- links$qualif 
+E(g)$PG             <- links$PG
+
 g %>% write_graph("./results/graph.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 

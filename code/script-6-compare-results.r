@@ -18,7 +18,7 @@ shell("cls")
 
 ## debug mode
 echo <- FALSE
-debug <- FALSE
+debug <- T
 if (debug){print("Debug mode")}
 
 ## load libraries
@@ -38,8 +38,8 @@ source("./code/functions-cluster-attributes.R")
 print("Loading graph...")
 
 g <- read_graph("./results/communities_consensus.csv", format="graphml")
-g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
-
+#g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
+plot(g)
 V(g)$colorscale <- round(V(g)$CL1_p,1)
 V(g)$color <- '#c1bb77'
 V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
@@ -47,6 +47,7 @@ V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
 V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
 V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
 
+print(V(g)$colorscale)
 # clusters_consensus <- read_csv("./results/clusters_consensus.csv")
 # add_clusters <- as.tibble(  V(g)$name) %>% 
 #       rename(name = value) %>% 
@@ -58,12 +59,19 @@ V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
 org_names <- read_csv("./tmp/organisations.csv")%>%
       select(CF,az_ragione_soc) %>%
       distinct(CF, .keep_all = TRUE)
+      
+shortlist <- read_csv("shortlist_orgs.csv")  
+
 info_vids  <- tibble(CF = V(g)$name, core = V(g)$core, str=V(g)$str, p = V(g)$CL1_p) %>%
       inner_join(org_names, by="CF")
-info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC, 
-                        sector = E(g)$sede_op_ateco, nace   = E(g)$NACE_group,
-                        qualif = E(g)$qualif,            pg = E(g)$PG)
 
+info_edges <- tibble(   comune = E(g)$sede_op_comune,
+                        loc = E(g)$LOC, 
+                        sector = E(g)$sede_op_ateco,
+                        nace = E(g)$NACE_group,
+                        qualif = E(g)$qualif,
+                        pg   = E(g)$PG)
+head(info_edges,20)
 reference_pg  <- get.professional.groups(g, cluster_name="reference_pg")
 reference_loc <- get.locations(g, cluster_name="reference_loc")
 reference_sec <- get.sectors(g, cluster_name="reference_sec")

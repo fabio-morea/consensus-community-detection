@@ -85,8 +85,9 @@ show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" )
 
 
 #####################################################################################
-cluster_N_times <- function(g, clustering_algorithm, n_trials, alpha = 0 , res = NA,start = NA ) {
+cluster_N_times <- function(g, clustering_algorithm, n_trials, alpha = 0 , res = NA,start = NA , epsilon = .0001) {
  
+ #epsilon is a small but non null value to reduce the weight of selected edges
   results<-tibble(
     m=0.0,
     nnclust=as.integer(0),
@@ -102,7 +103,7 @@ cluster_N_times <- function(g, clustering_algorithm, n_trials, alpha = 0 , res =
     if (alpha > 0.0){
       n_items <- length(applied_weights)
       n_null <- as.integer(alpha * n_items)
-      applied_weights[sample(n_items,n_null)] <- 0
+      applied_weights[sample(n_items,n_null)] <- epsilon
 
     }
     if (clustering_algorithm=="Louvian"){ 

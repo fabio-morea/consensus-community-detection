@@ -45,9 +45,9 @@ source("./code/functions-network-analysis.R")
 ## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
-g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
+#g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 stopifnot(gorder(g) >0)
-n_trials = 1000
+n_trials = 100
 if (debug){n_trials <- 50}
 
 # undirected graph to be used for algorithms that do not support directed
@@ -58,16 +58,17 @@ if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 # resolution is a relevant parameter to define the size of clusters
 # alpha is used to induce a variability in the consensus procedure
 
-res=c( 1.5, 1.75 , 2.0 ) 
-alpha = 0.1
+res=c( 1.0, 1.5 , 2.0 ) 
+alpha = 5/100
 
 all_clusters <- cluster_N_times(g=gu, 
 	res=res,
 	n_trials=n_trials, 
 	alpha = alpha,
-	clustering_algorithm="Louvian") 
+	clustering_algorithm="Louvian", 
+	epsilon = .01) 
  
-
+ 
  
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
@@ -105,8 +106,8 @@ consensus_clusters <- as_tibble_col(rownames(x)) %>% mutate(membership=0)
 more_clusers_to_be_found=TRUE
 remaining <- x
 
-min_vids <- 2 # counts only clusters with min_vids or more members
-min_weight <- 0.005 * sum(V(gu)$str) # counts only clusters above a given treshold
+min_vids <- 3 # counts only clusters with min_vids or more members
+min_weight <- (3/100) * sum(V(gu)$str) # counts only clusters above a given treshold
 weights <- V(gu)$str
 
 print("identify clusters above min_vids")
@@ -137,7 +138,7 @@ while (more_clusers_to_be_found){
 		if(echo){print(paste("a group below threshold ", current.cluster, " with ", length(cluster_ii_members), "vertices"))
 	}
 }
-	if (nrow(remaining) > min_vids) {more_clusers_to_be_found=TRUE} 
+	if (length(remaining) > min_vids) {more_clusers_to_be_found=TRUE} 
 	else{more_clusers_to_be_found=FALSE}
 }
  
@@ -161,14 +162,14 @@ for (i in cl_conv_table$cccc){
 }
 
 # print("Assign probability")
-
 V(g)$CL1_p <- 0.0
 for (i in 1:nrow(ccs)) V(g)[ccs[i,]$name]$CL1_p <- ccs[i,]$prob
-windows();hist(V(g)$CL1_p,breaks=50)
+windows();hist(V(g)$CL1_p,breaks=100)
+
  
 print("Saving results")
 ccs %>% write_csv("./results/clusters_consensus.csv")
-
+#ccs <- read_csv("./results/clusters_consensus.csv")
 
 # create a "community" object, standard igraph output
 # clusters_consensus <- make_clusters(
@@ -181,14 +182,41 @@ ccs %>% write_csv("./results/clusters_consensus.csv")
 ####
 
 #source("./code/functions-network-analysis.R")
+# generate image communities8.png
 show_subgraphs (g, 
  clusters_membership = V(g)$CL1, 
  nrows=2,
  ncols=4,
  label="CL1" ) 
 
+## improve histogram of probability:  
+V(g)$colorscale <- round(V(g)$CL1_p,1)
+V(g)$color <- '#fff25ecc'
+V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
+V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
+V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
+V(g)$color[V(g)$colorscale == 1.0] <- '#26ab17cc'
+
+df <- tibble(comm=V(g)$CL1,prob=V(g)$CL1_p,ccc=V(g)$color) %>%
+	mutate(prob = round(prob,2)) %>%
+	group_by(prob,ccc)%>%
+	count(prob, ccc)%>%
+	mutate(f = n/length(V(g)))%>%
+	filter(prob>=0.5)
+ 
+
+ggplot(df, aes(x=prob, y=f)) +
+  geom_col(fill="blue")+
+  xlim(c(0.49,1.01))+
+  theme_light()
+
+ggsave('./results/figures/probability_dist.png')
+
+
+
 g %>% write_graph("./results/communities_consensus.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
+
 
 #https://colorbrewer2.org/type=sequential&scheme=Reds&n=5
 #palette_reds <- ['#fee5d9','#fcae91','#fb6a4a','#de2d26','#a50f15']
@@ -201,9 +229,6 @@ V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
 V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
 V(g)$color[V(g)$colorscale == 1.0] <- '#26ab17cc'
 
-
-print(stophere)
-
 print("analysis...")
 
 print("mixmat by clusters")
@@ -213,18 +238,17 @@ print("heatmap by clusters")
 mdf <- m %>% ### HEATMAP improve labels sorting
  as.data.frame() %>%
  rownames_to_column("from") %>%
- pivot_longer(-c("from"), names_to = "to", values_to = "weight") 
+ pivot_longer(-c("from"), names_to = "to", values_to = "weight") %>%
+ mutate(from = as.integer(from))%>%
+ mutate(to = as.integer(to))
 
 mdf %>% write_csv("./results/matrix.csv")
-# #debug
-# mdf <- read_csv("./results/matrix.csv") %>% 
-# 	mutate(from = as.integer(from)) %>%
-# 	mutate(to = as.integer(to)) 
+ 
 
 mdf %>%
  ggplot(aes(x=from, y=to, fill=weight)) + 
  geom_raster() + 
- scale_fill_gradient(low = "#ff000000", high = "#ff0000") + 
+ scale_fill_gradient(low = "#ffffff00", high = "#000000") + 
  theme_light()
 ggsave("./results/figures/heatmap_clusters.png")
 
@@ -302,11 +326,11 @@ windows();plot( ggg,
  vertex.label.font=1,
  vertex.label.color="black")
 
-top_clusters <- V(clusters_graph)$name [1:10]
+top_clusters <- V(clusters_graph)$name [2:10]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,
  layout=layout.circle,
- edge.width = E(ggg)$weight / max(E(ggg)$weight)*10,
+ edge.width = E(ggg)$weight / max(E(ggg)$weight)*30,
  vertex.size= strength(ggg)*100,
  vertex.color = "#04b0ff",
  vertex.label.font=1,
@@ -315,3 +339,5 @@ windows();plot( ggg,
 clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml")
 as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")
 print("Script completed.")
+
+#
