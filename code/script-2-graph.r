@@ -155,18 +155,19 @@ shortlist$az_ragione_soc
 
 scp1 <- as_tibble_col(coreness_g) %>%
                 add_column(str_g) %>%
+				add_column(degree_g)%>%
+				mutate(coreness = coreness_g, strength = str_g, degree = degree_g) %>%
                 mutate(coreness_g=value) %>%
                 add_column(CF = V(g)$name) %>%
                 left_join(shortlist,by="CF") %>%
 				mutate(type = replace_na(type,"other"))  %>%
-				mutate(short_name = replace_na(short_name," other"))  %>%
-				rename(coreness = coreness_g, strength = str_g)
-
+				mutate(short_name = replace_na(short_name," other"))  
+colnames(scp1)
 
 windows();scp1 %>% 
-ggplot(aes(y = strength, x = coreness,shape = type, color = short_name)) + theme_classic()+
-	
+	ggplot(aes(x = coreness, y = strength, shape = type, color = short_name)) + theme_classic()+
     geom_point(size = if_else(scp1$short_name==" other",3,6), alpha = 0.5)+
+				scale_y_continuous(trans="log10")+
 				scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
 				scale_color_manual(values=c("black", "green","purple","red","brown","#0066ff","#00aeff"))+
 				scale_shape_manual(values=c(19,15,18))+
@@ -174,10 +175,23 @@ ggplot(aes(y = strength, x = coreness,shape = type, color = short_name)) + theme
 				guides(shape = guide_legend(override.aes = list(size = 6)))+
                 theme(panel.grid.major = element_line(color = "gray"))+
                 theme(aspect.ratio = 0.5)+
-                labs(title = "Comparison of strength and coreness of the full network",
+                labs(title = "Comparison of coreness and strength of the network",
                             subtitle = glue("number of vertices: ",length(V(g))))
 
 
+windows();scp1 %>% 
+	ggplot(aes( x = coreness, y = degree, shape = type, color = short_name)) + theme_classic()+
+    geom_point(size = if_else(scp1$short_name==" other",3,6), alpha = 0.5)+
+				scale_y_continuous(trans="log10")+
+				scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
+				scale_color_manual(values=c("black", "green","purple","red","brown","#0066ff","#00aeff"))+
+				scale_shape_manual(values=c(19,15,18))+
+				guides(color = guide_legend(override.aes = list(size = 6)))+
+				guides(shape = guide_legend(override.aes = list(size = 6)))+
+                theme(panel.grid.major = element_line(color = "gray"))+
+                theme(aspect.ratio = 0.5)+
+                labs(title = "Comparison of coreness and degree of the network",
+                            subtitle = glue("number of vertices: ",length(V(g))))
  
 ggsave("./results/figures/figure_scatterplot1.png",
   width = 24, heigh = 12, units = "cm")
