@@ -37,8 +37,10 @@ g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1])
 org_names <- read_csv("./tmp/organisations.csv")%>%
       select(CF,az_ragione_soc) %>%
       distinct(CF, .keep_all = TRUE)
+
 info_vids  <- tibble(CF = V(g)$name, core = V(g)$core, str=V(g)$str, p = V(g)$CL1_p) %>%
       inner_join(org_names, by="CF")
+
 info_edges <- tibble(   comune = E(g)$sede_op_comune,   loc = E(g)$LOC, 
                         sector = E(g)$sede_op_ateco, nace   = E(g)$NACE_group,
                         qualif = E(g)$qualif,            pg = E(g)$PG)
@@ -120,7 +122,7 @@ show_clusters_AB <- function(title="", a, b, order = 0, delta = 0, scale_vids=1,
    
  
 
-show_clusters_AB(a=1,b=2, order=0 , delta = 8, scale_vids = 2)
+show_clusters_AB(a=2,b=3, order=0 , delta = 2, scale_vids = 1)
 
 show_clusters_AB(a=14,b=2, order=0 , delta = 1, scale_vids = 1)
 show_clusters_AB(a=2,b=3, order=1 , delta = 1, scale_vids = 1)
@@ -140,16 +142,16 @@ clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
 plot_concentric(clusters_graph, 
 	simplify_graph = TRUE, 
 	show_loops=TRUE, 
-	top_n_vids=30, 
+	top_n_vids=10, 
 	outer_circle = 5,
-	red_vertex=23)
+	red_vertex=1)
 
 plot_concentric(clusters_graph, 
 	simplify_graph = TRUE, 
 	show_loops=FALSE, 
-	top_n_vids=42, 
+	top_n_vids=10, 
 	outer_circle = 6,
-	red_vertex=37)
+	red_vertex=2)
 
 
 print("Script completed.")

@@ -10,10 +10,9 @@ library(tidyverse)
 
 library(igraph)
 
-# 
-#coords <- layout_concentric (n = 24, k = 12, r = 3)
-#ggplot(coords)+geom_point(aes(x=x,y=y))
-#clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
+
+
+clusters_graph <- read_graph("./results/_clusters_graph.csv", format="graphml")
 
 
 layout_concentric <- function(n,k,r){
@@ -97,12 +96,15 @@ plot_concentric <- function(graph,
 
 } 
 
-# plot_concentric(clusters_graph, 
-# 	simplify_graph = TRUE, 
-# 	show_loops=TRUE, 
-# 	top_n_vids=30, 
-# 		outer_circle = 5,
-# 	red_vertex=1)
+coords <- layout_concentric (n = 24, k = 12, r = 3)
+windows();ggplot(coords)+geom_point(aes(x=x,y=y))
+
+plot_concentric(clusters_graph, 
+	simplify_graph = TRUE, 
+	show_loops=TRUE, 
+	top_n_vids=10, 
+		outer_circle = 5,
+	red_vertex=1)
 
 # plot_concentric(clusters_graph, 
 # 	simplify_graph = TRUE, 

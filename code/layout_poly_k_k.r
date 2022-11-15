@@ -15,7 +15,7 @@ print("Loading graph...")
 g <- read_graph("./results/communities_consensus.csv", format="graphml")
 
 print("Generate a poly_kk layout: each cluster is extracted, coordinates are calculated with layout_k_k then translated in polar coordinates to a polygon")
-selected_clusters = c( 2,11,12,13,14,15)
+selected_clusters = c( 1,2,3,4)
 
 for (i in selected_clusters) stopifnot(i %in% sort(unique(V(g)$CL1)))
 g <- induced.subgraph(g, V(g)[ V(g)$CL1 %in% selected_clusters]) 
@@ -31,7 +31,7 @@ windows();plot(g,
 	  vertex.size = 4,
       layout = layout_with_kk)
 
-d = 10.0
+d = 4.0
 alpha <- 0
 dalpha <- 2 * pi / (length(selected_clusters))
 
@@ -60,7 +60,7 @@ windows();plot(g,
       vertex.color = as.factor(V(g)$CL1),
 	  vertex.label=NA,
 	  vertex.size = sqrt(V(g)$str),
-	  edge.width = E(g)$weight*4,
+	  edge.width = E(g)$weight,
 	  edge.color = "#00000072",
 	  edge.arrow.size = 0,
       layout = coords)

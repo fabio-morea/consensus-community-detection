@@ -40,12 +40,12 @@ print("Loading graph...")
 g <- read_graph("./results/communities_consensus.csv", format="graphml")
 #g <- induced.subgraph(g, V(g)[ V(g)$CL0 == 1]) 
 plot(g)
-V(g)$colorscale <- round(V(g)$CL1_p,1)
+V(g)$colorscale <- round(V(g)$CL1_p,2)
 V(g)$color <- '#c1bb77'
-V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
-V(g)$color[V(g)$colorscale == 0.8] <- '#fb6a4acc'
-V(g)$color[V(g)$colorscale == 0.9] <- '#2638decc'
-V(g)$color[V(g)$colorscale == 1.0] <- '#24d51080'
+V(g)$color[V(g)$colorscale >= 0.80] <- '#fc91efcc'
+V(g)$color[V(g)$colorscale >= 0.90] <- '#fb6a4acc'
+V(g)$color[V(g)$colorscale >= 0.95] <- '#2638decc'
+V(g)$color[V(g)$colorscale == 1.00] <- '#24d51080'
 
 print(V(g)$colorscale)
 # clusters_consensus <- read_csv("./results/clusters_consensus.csv")
@@ -108,16 +108,27 @@ for (i in clusters_to_process){
             cluster_figure_name <- paste0("./tmp/commpnity",i,".png")
             png(cluster_figure_name, 600, 600)
             plot(gi, 
-                  edge.color="gray",
+                  edge.color="#6c6c6c",
                   edge.width=E(gi)$weight*2,
-                  edge.arrow.size= E(gi)$weight,
+                  edge.arrow.size= E(gi)$weight/5,
                   vertex.color = V(gi)$color,
                   vertex.frame.color="#ffffffaa",
                   vertex.label=NA,
-                  vertex.size=sqrt(V(gi)$deg)*3,
-                  layout=layout.graphopt) 
+                  vertex.size=sqrt(V(gi)$str)*2,
+                  layout=layout_with_fr) 
             dev.off()
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
+
+            # show cluster in windows
+            windows();plot(gi, 
+                  edge.color="#6c6c6c",
+                  edge.width=E(gi)$weight*2,
+                  edge.arrow.size= E(gi)$weight/5,
+                  vertex.color = V(gi)$color,
+                  vertex.frame.color="#ffffffaa",
+                  vertex.label=NA,
+                  vertex.size=sqrt(V(gi)$str)*2,
+                  layout=layout_with_fr) 
             
             row1 <- ggarrange(title_block,cluster_figure, ncol = 2, labels = c(" ", "community"))
 
@@ -128,7 +139,7 @@ for (i in clusters_to_process){
             top_names <- info_vids_gi %>%
                   select(CF,az_ragione_soc, core, str, p)%>%
                   mutate(az_ragione_soc = substring(az_ragione_soc,1,40))%>%
-                  arrange(-str) %>%
+                  arrange(-core) %>%
                   filter(core > 1) %>%   
                   distinct(CF,.keep_all = TRUE) %>%
                   head(20)

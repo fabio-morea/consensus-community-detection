@@ -37,7 +37,7 @@ scatter_strength_core <- function(g,gi){
     library(infotheo)
     data <- tibble(
             core =  as.integer(V(g)$core), 
-            stre = as.integer(V(g)$str), 
+            stre = as.numeric(V(g)$str), 
             name = V(g)$name)%>%
             mutate(community = if_else(name %in% V(gi)$name, 1, 0))
 
@@ -56,6 +56,7 @@ scatter_strength_core <- function(g,gi){
                         scale_size_manual(values=c(3,5))+
                         scale_alpha_manual(values=c(.2,1.0))+
                         scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
+                        scale_y_continuous(trans="log10")+
                         theme(panel.grid.major = element_line(color = "gray"))+
                         labs(title = "Comparison of strength and coreness",
                               #subtitle = glue("Normalized Mutual Information ", NMI),
