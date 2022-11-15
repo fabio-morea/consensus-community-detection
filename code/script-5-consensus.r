@@ -106,8 +106,8 @@ consensus_clusters <- as_tibble_col(rownames(x)) %>% mutate(membership=0)
 more_clusers_to_be_found=TRUE
 remaining <- x
 
-min_vids <- 3 # counts only clusters with min_vids or more members
-min_weight <- (3/100) * sum(V(gu)$str) # counts only clusters above a given treshold
+min_vids <- 2 # counts only clusters with min_vids or more members
+min_weight <- (1/100) * sum(V(gu)$str) # counts only clusters above a given treshold
 weights <- V(gu)$str
 
 print("identify clusters above min_vids")
@@ -121,7 +121,7 @@ while (more_clusers_to_be_found){
 
 	print(paste(current.cluster, sum(weights[cluster_ii_members])))
 
-	if(length(cluster_ii_members) >= min_vids & 
+	if(length(cluster_ii_members) > min_vids & 
 		sum(weights[cluster_ii_members]) > min_weight) {
 		current.cluster <- current.cluster + 1
 		if(echo) print(paste("Processing cluster ", current.cluster, " with ", nrow(selected), "vertices"))
@@ -326,13 +326,13 @@ windows();plot( ggg,
  vertex.label.font=1,
  vertex.label.color="black")
 
-top_clusters <- V(clusters_graph)$name [2:10]
+top_clusters <- V(clusters_graph)$name [1:9]
 ggg <- induced.subgraph(clusters_graph,vids = top_clusters)
 windows();plot( ggg,
  layout=layout.circle,
- edge.width = E(ggg)$weight / max(E(ggg)$weight)*30,
+ edge.width = sqrt(E(ggg)$weight / max(E(ggg)$weight))*20,
  vertex.size= strength(ggg)*100,
- vertex.color = "#04b0ff",
+ vertex.color = "#04b0ffab",
  vertex.label.font=1,
  vertex.label.color="black")
 
