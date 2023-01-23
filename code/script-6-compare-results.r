@@ -120,7 +120,7 @@ for (i in clusters_to_process){
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
 
             # show cluster in windows
-            windows();plot(gi, 
+            plot(gi, 
                   edge.color="#6c6c6c",
                   edge.width=E(gi)$weight*2,
                   edge.arrow.size= E(gi)$weight/5,
@@ -129,13 +129,14 @@ for (i in clusters_to_process){
                   vertex.label=NA,
                   vertex.size=sqrt(V(gi)$str)*2,
                   layout=layout_with_fr) 
+
             
             row1 <- ggarrange(title_block,cluster_figure, ncol = 2, labels = c(" ", "community"))
 
       # row 2 names and core vs strength ---------------------------------------------------------
       
             scatter_plot <- scatter_strength_core(g,gi)
-
+            ggsave(filename = paste0("./results/figures/comm_detection_results scatter",i,".png"), width = 10, height = 8)
             top_names <- info_vids_gi %>%
                   select(CF,az_ragione_soc, core, str, p)%>%
                   mutate(az_ragione_soc = substring(az_ragione_soc,1,40))%>%

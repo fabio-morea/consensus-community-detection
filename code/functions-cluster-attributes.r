@@ -58,9 +58,12 @@ scatter_strength_core <- function(g,gi){
                         scale_x_continuous(breaks=seq(1,max(V(g)$core,1)))+
                         scale_y_continuous(trans="log10")+
                         theme(panel.grid.major = element_line(color = "gray"))+
-                        labs(title = "Comparison of strength and coreness",
+                        xlab("Coreness")+ylab("Strength")
+                        #labs(title = "Comparison of strength and coreness",
                               #subtitle = glue("Normalized Mutual Information ", NMI),
-                              caption = glue("number of vertices: ",length(V(g))))
+                              #caption = glue("number of vertices: ",length(V(g))))
+
+    
 
     return(scatterplot)
 }

@@ -216,7 +216,8 @@ as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
 print("Graph completed and saved.")
 
 
-
+print("Number of nodes")
+print(V(g))
  
 print("Script completed, please check results folder.")
 

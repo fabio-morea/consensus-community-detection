@@ -99,22 +99,22 @@ V(g)$cl_lv <- membership(clusters_lv)
 if (echo){print("Saving Louvian membership...")}
 tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
 describe_communities(g_undirected, clusters_lv, "Louvian")
-show_subgraphs (g_undirected, clusters_membership=membership(clusters_lv), nrows=2,ncols=4, label = "Louvian" ) 
+#show_subgraphs (g_undirected, clusters_membership=membership(clusters_lv), nrows=2,ncols=4, label = "Louvian" ) 
 print("Louvian completed.")
 
 ## community detection using Leiden algorithm  *************************************************************
-print("Community detection using Leiden algorithm...")
+#print("Community detection using Leiden algorithm...")
 
-clusters_ld <- cluster_leiden(g_undirected,  resolution = 0.50)
+#clusters_ld <- cluster_leiden(g_undirected,  resolution = 0.50)
 # membership stored in igraph object
-V(g)$cl_ld <- membership(clusters_ld)
+#V(g)$cl_ld <- membership(clusters_ld)
 
 # saving
-print("Saving Leiden membership...")
-tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
-describe_communities(g_undirected, clusters_ld, "Leiden")
-show_subgraphs (g_undirected, clusters_membership=membership(clusters_ld), nrows=2,ncols=4, label = "Leiden"  ) 
-print("Leiden completed.")
+# print("Saving Leiden membership...")
+# tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
+# describe_communities(g_undirected, clusters_ld, "Leiden")
+# show_subgraphs (g_undirected, clusters_membership=membership(clusters_ld), nrows=2,ncols=4, label = "Leiden"  ) 
+# print("Leiden completed.")
 
 ## saving results *************************************************************************************************
 if (echo){print("Saving giant component with 4 different clusters membership...")}
@@ -125,8 +125,8 @@ as_long_data_frame(g) %>% write_csv("./results/communities_df.csv")
 print("Summary of communities by size")
 # cc <- community.size(clusters_eb, mm="betweenness") 
 # cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
-cc <- community.size(clusters_lv, mm="Louvian") 
-cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
+# cc <- community.size(clusters_lv, mm="Louvian") 
+# cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
 minpoints <- 2
 non.trivial.communities <- cc %>% filter(c_sizes > minpoints)
@@ -167,16 +167,21 @@ for (i in 1:n){
 
 #histogram of modularity
 hm <- ggplot(results,aes(x=m)) + 
-    geom_histogram( colour = "gray", fill = "blue",binwidth=0.0005)+
+    geom_histogram( colour = "white", fill = "black",bins = 30)+
+    xlab("modularity") +
     theme_light()
 
 hc <- ggplot(results,aes(x=n_clust)) + 
-    geom_histogram( colour = "gray", fill = "blue",binwidth=1)+
+    geom_histogram( colour = "white", fill = "black", binwidth = .5)+
+    xlab("number of communities") +
     theme_light()
 
 figure <- ggarrange(hm, hc,                    
-             labels = c("modularity", "number of clusters"),
-                    ncol = 2, nrow = 1)+theme(aspect.ratio=.4)
+             labels = c("a)", "b)"),
+             font.label = list(size = 12, color = "black"),
+             ncol = 2, nrow = 1)+
+             theme(aspect.ratio=.4)
+
 windows();plot(figure)
 ggsave("./results/figures/modularity_nclusters.png")
 
