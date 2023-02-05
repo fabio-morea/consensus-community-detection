@@ -12,6 +12,7 @@
 
 # script 3: analysing netwoek components
 
+
 ## debug mode
 debug <- FALSE
 echo <- TRUE
@@ -24,7 +25,7 @@ library(igraph)
 print("Loading data...")
 g <- read_graph("./results/graph.csv", format="graphml")
 
-
+print(g)
 
 windows();plot(g,
      layout=layout_with_mds,
@@ -115,3 +116,6 @@ as_long_data_frame(g)%>% write_csv("./results/graph_as_df.csv")
 print("Process completed, please check results folder.")
 
  
+
+x <- table(components(g)$membership) 
+y = table(x)

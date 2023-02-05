@@ -35,6 +35,12 @@ columns <- c("id_cittadino","data_nascita", "iso3","genere",
  "SLL_codice", "SLL_nome", "tipo_contratto")
 
 data <- load_data(path, columns, echo, debug)
+
+all_organisations <- data %>% 
+    select(CF, az_ragione_soc)  %>% 
+    distinct(.keep_all = TRUE)
+all_organisations %>% write_csv("./tmp/all_employers.csv")
+
  
 ## filter by profession
 # 2.1 - Specialisti in scienze matematiche, informatiche, chimiche, fisiche e naturali
