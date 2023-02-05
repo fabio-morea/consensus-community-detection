@@ -144,7 +144,7 @@ ggsave("./results/figures/figure_scatterplot.png",
 
 # scatterplot with shapes
 
-shortlist <- read_csv("./code/shortlist_orgs.csv")  
+shortlist <- read_csv("./network/shortlist_orgs.csv")  
 shortlist$az_ragione_soc
 
 scp1 <- as_tibble_col(coreness_g) %>%

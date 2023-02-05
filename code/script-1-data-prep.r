@@ -15,7 +15,7 @@ library(lubridate) #dates
 library(readxl)
  
 ## load functions
-source("./code/parameters.R")
+source("./param/parameters.R")
 source("./code/functions-labour-market-data.R")
 
 path <- get.data.folder.path()
