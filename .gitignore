@@ -1,6 +1,5 @@
 *
-params
-!code/
-!network/
+!code/*
+!network/*
 !.gitignore
 !README*
