@@ -87,7 +87,7 @@ hist3 <- ggplot(weight_g3,aes(x=ww)) +
 
 ggarrange(hist1, hist2, hist3,ncol = 3, nrow = 1)
 ggsave("./results/figures/histograms3.png",dpi=150,width = 20, height = 7, units = "cm")
-dev.off()
+#dev.off()
 
 g <- graph.data.frame(links, directed=T)
 
@@ -150,7 +150,7 @@ ggsave("./results/figures/figure_scatterplot.png",
 
 # scatterplot with shapes
 
-shortlist <- read_csv("shortlist_orgs.csv")  
+shortlist <- read_csv("./code/shortlist_orgs.csv")  
 shortlist$az_ragione_soc
 
 scp1 <- as_tibble_col(coreness_g) %>%
@@ -210,6 +210,10 @@ E(g)$PG             <- links$PG
 
 g %>% write_graph("./results/graph.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/graph_as_df.csv")
+
+as_long_data_frame(g) %>% 
+  select(from,to,weight)%>%
+  write_csv("./network/graph_as_df.csv")
 
 
 
