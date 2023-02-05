@@ -1,31 +1,30 @@
-# functions
+# Author: Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano,
+# within the frame of PhD in Applied Data Science and Artificial Intelligence at University of Trieste
+# Package: Consensus community Detection - version 1.0
+# SPDX-License-Identifier: CC-BY-4.0
+# GitHab repository: https://github.com/fabio-morea-areasciencepark/consensus-community-detection
+
+# functions to load and prepare data
 
 # Load data 
 load_data <- function(path, columns,  echo = FALSE, debug = FALSE){
-
     if (debug == TRUE) {print("Debug mode: only 2 files will be loaded")} #only for debug puropses
     if (echo == TRUE) {print(paste("Start loading data from ", path) ) }  #only for debug puropses
-
     files = list.files(path=path, pattern="dati*", all.files=TRUE, full.names=TRUE)
     print(files)
     nfiles = length(files)
-
     if (debug == TRUE) {nfiles <- 2 } #only for debug puropses
-
     data <- files[1] %>% 
         read_delim( delim = "|", show_col_types = FALSE) %>%
         select(all_of(columns))  
-
     for (i in 2:nfiles){
         print(paste("Loading file ", files[i]))
         new <- files[i] %>% 
             read_delim(  delim = "|", show_col_types = FALSE) %>%
             select(all_of(columns)) %>%
             unique()
-
-        data <- rbind(data,new) 
-        
-         
+        data <- rbind(data,new)               
     }
     if (echo == TRUE) {print(paste(nfiles, "files loaded."))}    #only for debug puropses
     return(data)
@@ -41,7 +40,6 @@ make.ids.conversion.table <- function(data, echo= FALSE){
         arrange(data_nascita, iso3, genere, data_inizio, id_cittadino, saldo)%>%
         group_by(data_nascita,  iso3, genere)%>%
         unique()
-
     ii<- 1
     ids_conversion_table = tibble(
         idempl=as.integer(0),

@@ -1,5 +1,11 @@
-# functions for network analysis
+# Author: Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano,
+# within the frame of PhD in Applied Data Science and Artificial Intelligence at University of Trieste
+# Package: Consensus community Detection - version 1.0
+# SPDX-License-Identifier: CC-BY-4.0
+# GitHab repository: https://github.com/fabio-morea-areasciencepark/consensus-community-detection
 
+# functions for network analysis
 
 #####################################################################################
 community.size <- function(clusters, mm){

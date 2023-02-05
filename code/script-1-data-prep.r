@@ -1,14 +1,9 @@
-# Author: Fabio Morea @ Area Science Park
+# Author: Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
 # Acknowledgments: this research work is supervided by prof. Domenico De Stefano,
 # within the frame of PhD in Applied Data Science and Artificial Intelligence at University of Trieste
-# Package: Labour Market Network - version 1.0
-# Description: R program to extract information from labour market data.
-# Original data is not included in the package as it contains persnoal information
-# Test data is random an contains no personal information
-
+# Package: Consensus community Detection - version 1.0
 # SPDX-License-Identifier: CC-BY-4.0
-
-# GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-network 
+# GitHab repository: https://github.com/fabio-morea-areasciencepark/consensus-community-detection
 
 ## debug mode
 debug <- FALSE

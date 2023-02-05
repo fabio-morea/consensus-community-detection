@@ -1,28 +1,12 @@
-# Author: Fabio Morea @ Area Science Park
-# Acknowledgments: this research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence @ University of Trieste
-
-# Package: Labour Market Network - version 1.0
-# Description: R program to extract information from labour market data.
-# Original data is not included in the package as it contains personal information
-# Test data is contains no personal information
-
+# Author: Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
+# Acknowledgments: this research work is supervided by prof. Domenico De Stefano,
+# within the frame of PhD in Applied Data Science and Artificial Intelligence at University of Trieste
+# Package: Consensus community Detection - version 1.0
 # SPDX-License-Identifier: CC-BY-4.0
-
-# GitLab: https://gitlab.com/fabio-morea-areasciencepark/labour-market-network
+# GitHab repository: https://github.com/fabio-morea-areasciencepark/consensus-community-detection
 
 # script 5: consensus
-
-#A good clusteing algoritm in this domain should identify clusters that
-#-	Have at leas min.point 
-#-	All trivial clusters of 1 or 2 points are grouped in a cluster 0 FRINGE
-#-	Each point is assigned with a PROBABILITY of being part of consensus cluster (as in fuzzy clustering) so we can identify points that are confidently placed in this cluster and points that are not. A result is a matrix of probabilities (N.points X N_clusters)
-#- clusters have better ehomogeneity than the original network
-#- high intra cluster connections, low inter cluster connections
-
-#We use consensus, similar to random forrest
-#-	Small perturbation of algoritm parameters and network (randomly exclude a fraction of elements with low coreness)
-#-	Pairwise omparison
-
+ 
 
 ## clear terminal
 shell("cls")
