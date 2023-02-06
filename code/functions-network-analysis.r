@@ -26,28 +26,15 @@ describe_communities <- function(g, clusters,mm){
     print(glue("Results of community detection by ", mm, " algorithm"))
     sizedist=sort(as.vector(sizes(clusters)))
     print(table(sizedist))
-    #windows();plot(sizedist)
-    
-    #print(table(membership(clusters)))
-
-    #print(summary(clusters$membership))
-    #boxplot(a ~ b, data = dataframe, xlab = "",  ylab = "", main = "")
-    #windows();hist(sizes(clusters))
-    
-
-
-    #windows();
-    #plot(clusters,g,vertex.size=2,vertex.label=NA,layout=layout.fruchterman.reingold,main = mm )
+ 
 }
 
-# TODO improve as per https://stackoverflow.com/questions/18250684/add-title-and-legend-to-igraph-plots
-
+ 
 
 #####################################################################################
 show_subgraphs <- function( g, clusters_membership, nrows=1, ncols=3, label="" ) {
 
     nsubgraphs <- nrows*ncols
-    #palette_reds <- c('#a50f14','#de2d26' ,'#fb6a4a','#fcae91','#ffd7c5', "#cdcdcd", "#f6f4d0")
     V(g)$colorscale <- round(V(g)$CL1_p,1)
     V(g)$color <- '#c1bb77'
     V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'

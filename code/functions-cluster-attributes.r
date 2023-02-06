@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: CC-BY-4.0
 # GitHab repository: https://github.com/fabio-morea-areasciencepark/consensus-community-detection
 
-# functions to extract and analyze cluster/community attributes
+# functions to extract and analyze cluster/community attributes:
+# professional groups (PG), location and sector.
 
 get.professional.groups <- function(g, cluster_name){
   prof_groups <- E(g)$PG

@@ -3,3 +3,7 @@
 !code/
 !network/
 !README*
+
+# if .gitignore is changed, chear chache and reload:
+#       git rm -r --cached .
+#       git add  .

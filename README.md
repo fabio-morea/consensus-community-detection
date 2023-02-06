@@ -11,17 +11,12 @@ Package: Consensus community Detection - version 1.0
 R program to identify communities within a labour-market network.
 Data availability: Original data is not included in the package as it contains persnoal information
 ### scripts available
-Script1: data preparation
-Script2: generate the adjacency matrix and graph
-Script3: analyse degree, coreness and components
-Script4: community detection
-Script5: consensus 
-Script6: visualization 
-
-functions:
+01: analyse degree, coreness and components of the network
+02: community detection
+03: consensus 
+04: visualization 
 functions-labour-market-data.py
-functions-network-analysis.py
-
+functions-network-analysis.py: 
 ## SPDX-License-Identifier: CC-BY-4.0
 
 ## GitHab repository:  
