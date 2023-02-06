@@ -1,4 +1,4 @@
-# Consensus community detection algorith for labor market networks
+# Consensus Community Detection algorith for labor market networks
 
 ## Author: 
 Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
@@ -6,7 +6,7 @@ Fabio Morea @ Area Science Park, Trieste, Italy (www.areasciencepark.it)
 This research work is supervided by prof. Domenico De Stefano, within the frame of PhD in Applied Data Science and Artificial Intelligence at University of Trieste
 
 ## Description: 
-Package: Consensus community Detection - version 1.0
+Package: Consensus Community Detection - version 1.0
 R program to identify communities within a labour-market network.
 ### scripts available
 
@@ -20,3 +20,6 @@ R program to identify communities within a labour-market network.
 
 ## GitHab repository:  
 https://github.com/fabio-morea-areasciencepark/consensus-community-detection
+
+## DOI 
+This code is published on Zenodo: DOI 10.5281/zenodo.7031894 
