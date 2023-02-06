@@ -24,7 +24,6 @@ library(ggpubr)
 source("./code/functions-network-analysis.R")
 
 ## load graph
-## load graph
 print("Loading graph...")
 g <- read_graph("./results/graph.csv", format="graphml")
 g <- induced.subgraph(g, V(g)[ CL0 == 1])#giant component
@@ -34,54 +33,6 @@ if (debug){
     }
 # undirected graph to be used for algorithms that do not support directed
 g_undirected <- as.undirected(g,mode = "each")
-
-## TODO at this stage we do community detection on giant componennt, 
-## but this overlooks a relevant opportunity: communities are level-1 clusters
-## and we should do hiearchical clustering
-
-
-
-# ## community detection using Edge Betweenneess algorithm *************************************************************
-# ## https://www.rdocumentation.org/packages/igraph/versions/1.3.2/topics/cluster_edge_betweenness
-# print("Community detection using Edge Betweenneess algorithm...")
-
-# clusters_eb <- cluster_edge_betweenness(g, 
-#                          weights = E(g)$ww,
-#                          directed = TRUE,
-#                          edge.betweenness = TRUE,
-#                          merges = TRUE,
-#                          bridges = TRUE,
-#                          modularity = TRUE,
-#                          membership = TRUE)
-
-# # membership stored in igraph object
-# V(g)$cl_eb <- membership(clusters_eb)
-# g <- delete_vertex_attr(g, "id")
-
-# # saving
-# if (echo){print("Saving edge betweenneess membership...")}
-# tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_eb.csv")
-# describe_communities(g, clusters_eb, "betweenness")
-# show_subgraphs (g, clusters_membership=membership(clusters_eb), nrows=2, ncols=4, label = "betweenness" ) 
-# print("EB completed.")
-
-# ## community detection using Eigenvector algorithm  *************************************************************
-# print("Community detection using Eigenvector algorithm...")
-
-# clusters_ev <- cluster_leading_eigen (g_undirected, 
-# 	weights = E(g_undirected)$ww,
-# 	start = V(g)$cl_eb,
-# 	options = arpack_defaults) 
-
-# # membership stored in igraph object
-# V(g)$cl_ev <- membership(clusters_ev)
-
-# # saving
-# if (echo){print("Saving eigenvector membership...")}
-# tibble(membership(clusters_eb)) %>% write_csv("./results/clusters_ev.csv")
-# describe_communities(g_undirected, clusters_ev, "eigenvector")
-# show_subgraphs (g_undirected, clusters_membership=membership(clusters_ev), nrows=2,ncols=4, label = "eigenvector" ) 
-# print("EV completed.")
 
 ## community detection using Louvian algorithm  *************************************************************
 print("Community detection using Louvian algorithm...")
@@ -94,22 +45,8 @@ V(g)$cl_lv <- membership(clusters_lv)
 if (echo){print("Saving Louvian membership...")}
 tibble(membership(clusters_lv)) %>% write_csv("./results/clusters_lv.csv")
 describe_communities(g_undirected, clusters_lv, "Louvian")
-#show_subgraphs (g_undirected, clusters_membership=membership(clusters_lv), nrows=2,ncols=4, label = "Louvian" ) 
-print("Louvian completed.")
-
-## community detection using Leiden algorithm  *************************************************************
-#print("Community detection using Leiden algorithm...")
-
-#clusters_ld <- cluster_leiden(g_undirected,  resolution = 0.50)
-# membership stored in igraph object
-#V(g)$cl_ld <- membership(clusters_ld)
-
-# saving
-# print("Saving Leiden membership...")
-# tibble(membership(clusters_ld)) %>% write_csv("./results/clusters_ld.csv")
-# describe_communities(g_undirected, clusters_ld, "Leiden")
-# show_subgraphs (g_undirected, clusters_membership=membership(clusters_ld), nrows=2,ncols=4, label = "Leiden"  ) 
-# print("Leiden completed.")
+print("Louvian clustering completed.")
+ 
 
 ## saving results *************************************************************************************************
 if (echo){print("Saving giant component with 4 different clusters membership...")}
@@ -118,10 +55,6 @@ as_long_data_frame(g) %>% write_csv("./results/communities_df.csv")
 
 ## comparing results of different methods *************************************************************************
 print("Summary of communities by size")
-# cc <- community.size(clusters_eb, mm="betweenness") 
-# cc <- rbind(cc, community.size(clusters_ev, mm="eigenvector") )
-# cc <- community.size(clusters_lv, mm="Louvian") 
-# cc <- rbind(cc, community.size(clusters_ld, mm="Leiden") )
 
 minpoints <- 2
 non.trivial.communities <- cc %>% filter(c_sizes > minpoints)
@@ -140,9 +73,9 @@ ggsave (file="./results/figures/figure_comm_size.png", width=20, height=12, dpi=
 # our reference is i_best the trial with highest moularity
 
 # differences in clusters assignation are measured with NMI Normalized Mutual Information
-#mutinformation takes two random variables as input 
+# mutinformation takes two random variables as input 
 # and computes the mutual information in nats according to the entropy estimator method. 
-#If Y is not supplied and X is a matrix-like argument, the function returns a matrix of mutual information between all pairs of variables in the dataset X.
+# If Y is not supplied and X is a matrix-like argument, the function returns a matrix of mutual information between all pairs of variables in the dataset X.
 
 NMI=c()
 all_clusters = c()

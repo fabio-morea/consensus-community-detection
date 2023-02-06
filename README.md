@@ -8,7 +8,7 @@ This research work is supervided by prof. Domenico De Stefano, within the frame 
 ## Description: 
 Package: Consensus Community Detection - version 1.0
 R program to identify communities within a labour-market network.
-### scripts available
+### Scripts
 
 * 01: analyse degree, coreness and components of the network
 * 02: community detection
@@ -16,6 +16,12 @@ R program to identify communities within a labour-market network.
 * 04: visualization 
 * functions-labour-market-data.py
 * functions-network-analysis.py
+
+### Data
+* graph_as_df.csv: full network as a list of edges associated with weight, location (LOC), professional group (PG) and sector (NACE)
+* groups.xlxs: groups table by location (LOC), professional group (PG) and sector (NACE) 
+* shortlist_orgs.csv: list of universities and research centers, associated with their respective node identifier
+
 ## SPDX-License-Identifier: CC-BY-4.0
 
 ## GitHab repository:  

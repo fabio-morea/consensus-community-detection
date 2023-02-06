@@ -162,7 +162,6 @@ mixmat <- function(mygraph, attrib, use.density=TRUE) {
                dimnames=list(attlist,attlist))
  
   # calculate edge density for each matrix entry by pairing type
-  # lends itself to parallel if available
   el <- get.edgelist(mygraph,names=FALSE)
   
   total <- numatts*numatts

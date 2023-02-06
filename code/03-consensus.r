@@ -40,7 +40,7 @@ gu <- as.undirected(g,mode = "each")
 if (echo) print(paste("repeat clustering ", n_trials, "times ..."))
 ## CONSENSUS
 # resolution is a relevant parameter to define the size of clusters
-# alpha is used to induce a variability in the consensus procedure
+# alpha is used to induce further variability in the consensus procedure
 
 res=c( 1.0, 1.5 , 2.0 ) 
 alpha = 5/100
@@ -51,8 +51,6 @@ all_clusters <- cluster_N_times(g=gu,
 	alpha = alpha,
 	clustering_algorithm="Louvian", 
 	epsilon = .01) 
- 
- 
  
 as.data.frame(all_clusters,
  row.names = V(gu)$name ) %>% 
@@ -155,17 +153,7 @@ print("Saving results")
 ccs %>% write_csv("./results/clusters_consensus.csv")
 #ccs <- read_csv("./results/clusters_consensus.csv")
 
-# create a "community" object, standard igraph output
-# clusters_consensus <- make_clusters(
-# g,
-# membership = V(g)$CL1,
-# algorithm = "louvian consensus",
-# merges = NULL,
-# modularity = FALSE
-# )
-####
 
-#source("./code/functions-network-analysis.R")
 # generate image communities8.png
 show_subgraphs (g, 
  clusters_membership = V(g)$CL1, 
@@ -197,15 +185,9 @@ ggplot(df, aes(x=prob, y=f)) +
 ggsave('./results/figures/probability_dist.png')
 
 
-
 g %>% write_graph("./results/communities_consensus.csv", format="graphml")
 as_long_data_frame(g) %>% write_csv("./results/communities_consensus_as_df.csv")
 
-
-#https://colorbrewer2.org/type=sequential&scheme=Reds&n=5
-#palette_reds <- ['#fee5d9','#fcae91','#fb6a4a','#de2d26','#a50f15']
-#pal <- brewer.pal(length(unique(V(g)$colorscale)), "Greens")
-#palette_reds <- c('#a50f15','#de2d26' ,'#fb6a4a80','#fcae9180','#fee5d980')
 V(g)$colorscale <- round(V(g)$CL1_p,1)
 V(g)$color <- '#fff25ecc'
 V(g)$color[V(g)$colorscale == 0.7] <- '#fc91efcc'
@@ -219,7 +201,7 @@ print("mixmat by clusters")
 m <- mixmat(g,"CL1", use.density=TRUE )
 
 print("heatmap by clusters")
-mdf <- m %>% ### HEATMAP improve labels sorting
+mdf <- m %>% 
  as.data.frame() %>%
  rownames_to_column("from") %>%
  pivot_longer(-c("from"), names_to = "to", values_to = "weight") %>%
@@ -236,10 +218,7 @@ mdf %>%
  theme_light()
 ggsave("./results/figures/heatmap_clusters.png")
 
-# iter-cluster VS itra-cluster weight
-# mdf <- read_csv("./results/matrix.csv") %>% 
-# 	mutate(from = as.integer(from)) %>%
-# 	mutate(to = as.integer(to)) 
+
 
 list_clusters <- mdf %>% select(from) %>% distinct() %>% pull()
 results <- tibble(cl = 0, inter = 0.0, intra = 0.0, ratio = 0.0) %>% head(0)
@@ -324,4 +303,4 @@ clusters_graph %>% write_graph("./results/_clusters_graph.csv", format="graphml"
 as_long_data_frame(clusters_graph) %>% write_csv("./results/_clusters_graph_as_df.csv")
 print("Script completed.")
 
-#
+

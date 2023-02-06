@@ -42,13 +42,6 @@ V(g)$color[V(g)$colorscale >= 0.95] <- '#2638decc'
 V(g)$color[V(g)$colorscale == 1.00] <- '#24d51080'
 
 print(V(g)$colorscale)
-# clusters_consensus <- read_csv("./results/clusters_consensus.csv")
-# add_clusters <- as.tibble(  V(g)$name) %>% 
-#       rename(name = value) %>% 
-#       left_join(clusters_consensus, by = "name")
-# V(g)$CL1 <- add_clusters$cluster
-# V(g)$CL1_p <- add_clusters$probability
- 
 
 org_names <- read_csv("./tmp/organisations.csv")%>%
       select(CF,az_ragione_soc) %>%
@@ -72,7 +65,7 @@ reference_sec <- get.sectors(g, cluster_name="reference_sec")
 
 min_cluster_size_to_plot <- 12
 clusters_to_process <- sort(unique(V(g)$CL1))
-if (debug){################# DEBUG ##############################################
+if (debug){ 
       clusters_to_process <- clusters_to_process[1:5]
 }  
  plot_list <- list()
@@ -86,7 +79,6 @@ for (i in clusters_to_process){
             iii <- iii + 1
             print(paste("processing cluster",i, "  size", cl_size))
             info_vids_gi  <- info_vids  %>% filter(V(g)$name %in% V(gi)$name)
-            #info_edges_gi <- info_edges %>% filter(E(g) %in% E(gi))
             
       # row 1 title and network figure
 
@@ -210,13 +202,10 @@ for (i in clusters_to_process){
             ggsave(filename = paste0("./results/figures/comm_detection_results",i,".pdf"), 
             plot = tmp , 
             width = 19, height = 29)
-            # print(iii)
-            # windows();plot(plot_list[[iii+1]])
+
   }
 }
- 
-#print(plot_list)
-#all plots in a pdf, one for each page
+
 ggsave(filename = "./results/figures/comm_detection_results.pdf", 
    plot = marrangeGrob(plot_list, nrow=1, ncol=1), 
    width = 19, height = 29)
