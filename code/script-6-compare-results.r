@@ -107,15 +107,15 @@ for (i in clusters_to_process){
 
             cluster_figure_name <- paste0("./tmp/commpnity",i,".png")
             png(cluster_figure_name, 600, 600)
-            plot(gi, 
+            plot(simplify(gi), 
                   edge.color="#6c6c6c",
-                  edge.width=E(gi)$weight*2,
-                  edge.arrow.size= E(gi)$weight/5,
+                  edge.width=E(gi)$weight,
+                  edge.arrow.size=0,# E(gi)$weight/5,
                   vertex.color = V(gi)$color,
                   vertex.frame.color="#ffffffaa",
                   vertex.label=NA,
-                  vertex.size=sqrt(V(gi)$str)*2,
-                  layout=layout_with_fr) 
+                  vertex.size=sqrt(V(gi)$str)*1.3,
+                  layout=layout_with_graphopt) 
             dev.off()
             cluster_figure <- rasterGrob(png::readPNG(cluster_figure_name) )
 

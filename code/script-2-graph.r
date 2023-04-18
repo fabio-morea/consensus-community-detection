@@ -116,7 +116,7 @@ histogram.png(degree_g,   "./results/figures/figure_degree.png")
 
 # Nodes' strength
 print("Analysing strength...")
-str_g    <- igraph::strength(g)
+str_g    <- igraph::strength(g) #  mode = c("all", "out", "in", "total")
 V(g)$str    <- str_g
 histogram.png(str_g,   "./results/figures/figure_str.png")
 
